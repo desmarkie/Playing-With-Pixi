@@ -12,6 +12,7 @@ module.exports = (grunt) ->
 		folder: 
 			src:	'source/'
 			deploy: 'deploy/'
+			css:	'source/css/'
 
 		path:
 			source:
@@ -34,6 +35,7 @@ module.exports = (grunt) ->
 				'Gruntfile.coffee'
 				'source/*.coffee'
 				'source/**/*.coffee'
+				'source/css/*.css'
 			]
 			tasks: ['onwatch']
 
@@ -57,7 +59,7 @@ module.exports = (grunt) ->
 		uglify:
 			options:
 				banner: "<%= banners.credits %>"
-				mangle: false
+				mangle: true
 				compress:{
 					global_defs: {
 						"DEBUG": false
@@ -74,10 +76,16 @@ module.exports = (grunt) ->
 					'<%= path.min.app %>': ['<%= path.output.app %>']
 				]
 
+		cssmin:
+			minify:
+				src: 'source/css/style.css'
+				dest: 'deploy/static/css/pwpcss.min.css'
+
 	grunt.loadNpmTasks 'grunt-contrib-connect'
 	grunt.loadNpmTasks 'grunt-contrib-watch'
 	grunt.loadNpmTasks 'grunt-coffee-percolator'
 	grunt.loadNpmTasks 'grunt-contrib-uglify'
+	grunt.loadNpmTasks 'grunt-contrib-cssmin'
 
 	grunt.registerTask 'default', =>
 		grunt.task.run ['connect']
@@ -87,5 +95,6 @@ module.exports = (grunt) ->
 		'percolator:main'
 		'percolator:app'
 		'uglify'
+		'cssmin'
 	]
 

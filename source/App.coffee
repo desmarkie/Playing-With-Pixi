@@ -17,6 +17,10 @@ class App
 	menuOpen: false
 	infoOpen: false
 
+	stageColor: 0x0e0e0e
+
+	spacePressed: false
+
 	constructor: ->
 		@renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
 
@@ -25,7 +29,7 @@ class App
 			for sketch in @sketches
 				sketch.sketch.resize()
 
-		toDo = [Smoky, Trails, Dots]
+		toDo = [Smoky, Trails, Dots, Spirals]
 
 		@textures = [PIXI.Texture.fromImage('/img/node.png')]
 
@@ -103,18 +107,19 @@ class App
 			TweenMax.to @menuPanel, 0.5, {css:{opacity:0}, ease:Power4.easeOut, onComplete:=>
 				$(@menuPanel).css 'z-index','1'
 			}
-			# TweenMax.to @menuButton, 0.5, {css:{color:'#0e0e0e'}, ease:Power4.easeOut}
-			TweenMax.to @infoButton, 0.5, {css:{color:'#0e0e0e'}, ease:Power4.easeOut}
+			TweenMax.to @menuButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
+			TweenMax.to @infoButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
 			# TweenMax.to @interface, 0.5, {css:{opacity:1}, ease:Power4.easeOut}
 		null
 
 	handleInterfaceOut: (e) =>
-		if @menuOpen and e.target != @menuButton
-			TweenMax.to e.target, 2, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
-		else if @infoOpen and e.target != @infoButton
-			TweenMax.to e.target, 2, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
-		else
-			TweenMax.to e.target, 2, {css:{color:'#0e0e0e'}, ease:Power4.easeOut}
+		# if @menuOpen and e.target != @menuButton
+		# 	TweenMax.to e.target, 2, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
+		# else if @infoOpen and e.target != @infoButton
+			# TweenMax.to e.target, 2, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
+		# else
+		# 	TweenMax.to e.target, 2, {css:{color:'#0e0e0e'}, ease:Power4.easeOut}
+		TweenMax.to e.target, 2, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
 		null
 
 	handleInterfaceOver: (e) =>
@@ -130,6 +135,8 @@ class App
 			@prev()
 		else if unicode is 39
 			@next()
+		else if unicode is 32
+			@spacePressed = true
 
 		null
 

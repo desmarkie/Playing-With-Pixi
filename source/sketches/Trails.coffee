@@ -32,7 +32,7 @@ class Trails extends Sketch
 		else
 			@curX = @mouseX = window.innerWidth * 0.5
 			@curY = @mouseY = window.innerHeight * 0.5
-			@stage = new PIXI.Stage(0x3d3e3e)
+			@stage = new PIXI.Stage(window.app.stageColor)
 
 			for i in [0..@trailLength-1] by 1
 				sp = new PIXI.Sprite(window.app.textures[0])

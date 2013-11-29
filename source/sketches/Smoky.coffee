@@ -35,7 +35,7 @@ class Smoky extends Sketch
 		@areaWidth = @windowWidth + 400
 		@areaHeight = @windowHeight + 400
 
-		@stage = new PIXI.Stage(0x3d3e3e)
+		@stage = new PIXI.Stage(window.app.stageColor)
 
 		@view = document.createElement('div')
 		@view.appendChild @renderer.view

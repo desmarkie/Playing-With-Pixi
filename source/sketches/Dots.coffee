@@ -50,7 +50,7 @@ class Dots extends Sketch
 
 	load: =>
 		if not @loaded
-			@stage = new PIXI.Stage(0x3d3e3e)
+			@stage = new PIXI.Stage(window.app.stageColor)
 			@createSprites()
 
 			@view = document.createElement('div')
@@ -64,7 +64,7 @@ class Dots extends Sketch
 			@gui.domElement.style.height = 'auto'
 			@view.appendChild @gui.domElement
 
-			@gui.add(@, 'spriteSize', 16, 128).onFinishChange((val)=>
+			@gui.add(@, 'spriteSize', 16, 128, 8).onFinishChange((val)=>
 				@spriteSize = val
 				@resize()
 			)
@@ -276,17 +276,18 @@ class Dots extends Sketch
 		null
 
 	resize: =>
-		for i in [@dots.length-1..0] by -1
-			for j in [@dots[i].length-1..0] by -1
-				@stage.removeChild @dots[i][j]
-				@dots[i].splice j, 1
+		if @loaded
+			for i in [@dots.length-1..0] by -1
+				for j in [@dots[i].length-1..0] by -1
+					@stage.removeChild @dots[i][j]
+					@dots[i].splice j, 1
 
-		@dots = []
+			@dots = []
 
-		@createSprites()
+			@createSprites()
 
-		@xLimit = @dots.length
-		@yLimit = @dots[0].length
+			@xLimit = @dots.length
+			@yLimit = @dots[0].length
 
 		null
 
