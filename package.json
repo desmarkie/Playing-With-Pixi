@@ -1,0 +1,15 @@
+{
+	"name": "coffeescript_101",
+	"version": "0.0.1",
+	"main": "gruntfile.coffee",
+	"devDependencies": {
+		"grunt": "~0.4.2",
+		"grunt-contrib-connect": "~0.5.0",
+		"grunt-contrib-watch": "~0.5.3",
+		"grunt-coffee-percolator": "~0.1.1",
+		"grunt-contrib-jshint": "~0.6.3",
+		"grunt-contrib-nodeunit": "~0.2.0",
+		"grunt-contrib-uglify": "~0.2.2",
+		"coffee-script": "~1.6.3"
+	}
+}
