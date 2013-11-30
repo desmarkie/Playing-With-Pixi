@@ -1,5 +1,5 @@
 # import sketches.*
-
+# import views.*
 class App
 
 	sketches: null
@@ -15,7 +15,9 @@ class App
 	infoButton: null
 	menuButton: null
 	menuOpen: false
-	infoOpen: false
+	infoOpen: true
+
+	infoPanel: null
 
 	stageColor: 0x0e0e0e
 
@@ -23,11 +25,6 @@ class App
 
 	constructor: ->
 		@renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
-
-		window.onresize = =>
-			@renderer.resize window.innerWidth, window.innerHeight
-			for sketch in @sketches
-				sketch.sketch.resize()
 
 		toDo = [Smoky, Trails, Dots, Spirals]
 
@@ -63,6 +60,14 @@ class App
 		@nextButton.onmouseover = @prevButton.onmouseover = @currentButton.onmouseover = @handleDivOver
 		@nextButton.onmouseout = @prevButton.onmouseout = @currentButton.onmouseout = @handleDivOut
 
+		@infoPanel = new InfoPanel()
+
+		window.onresize = =>
+			@infoPanel.resize()
+			@renderer.resize window.innerWidth, window.innerHeight
+			for sketch in @sketches
+				sketch.sketch.resize()
+
 		@init()
 
 	init: =>
@@ -92,10 +97,16 @@ class App
 		null
 
 	handleInfoClick: =>
-
+		if @menuOpen then @handleMenuClick()
+		@infoOpen = !@infoOpen
+		if @infoOpen
+			@infoPanel.show()
+		else
+			@infoPanel.hide()
 		null
 
 	handleMenuClick: =>
+		if @infoOpen then @handleInfoClick()
 		@menuOpen = !@menuOpen
 		if @menuOpen
 			$(@menuPanel).css 'z-index', '1200'
