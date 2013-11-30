@@ -31,7 +31,7 @@ class App
 
 		toDo = [Smoky, Trails, Dots, Spirals]
 
-		@textures = [PIXI.Texture.fromImage('/img/node.png')]
+		@textures = [PIXI.Texture.fromImage('img/node.png')]
 
 		@sketches = []
 		for i in toDo

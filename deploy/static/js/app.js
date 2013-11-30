@@ -1089,7 +1089,7 @@ App = (function() {
       return _results;
     };
     toDo = [Smoky, Trails, Dots, Spirals];
-    this.textures = [PIXI.Texture.fromImage('/img/node.png')];
+    this.textures = [PIXI.Texture.fromImage('img/node.png')];
     this.sketches = [];
     for (_i = 0, _len = toDo.length; _i < _len; _i++) {
       i = toDo[_i];
