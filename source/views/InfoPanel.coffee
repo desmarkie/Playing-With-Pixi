@@ -8,8 +8,8 @@ class InfoPanel
 		@view = $('#information-panel')
 		@bg = $('#information-panel-bg')
 		@contentPanel = $('#information-panel-content')
-		@bg.onclick = =>
-			@hide
+		#@bg.onclick = @bgClick
+		document.getElementById('information-panel-bg').onclick = @bgClick
 		$(@bg).css 'cursor', 'pointer'
 		@resize()
 
@@ -24,10 +24,14 @@ class InfoPanel
 		}
 		null
 
+	bgClick: =>
+		window.app.handleInfoClick()
+		null
+
 	resize: =>
 		xPos = (window.innerWidth - $(@contentPanel).width()) * 0.5
 		yPos = (window.innerHeight - $(@contentPanel).height()) * 0.5
 		console.log 'RESIZING :: '+xPos+', '+yPos
-		$(@contentPanel).css 'top', yPos+'px'
-		$(@contentPanel).css 'left', xPos+'px'
+		#$(@contentPanel).css 'top', Math.round(yPos)+'px'
+		#$(@contentPanel).css 'left', Math.round(xPos)+'px'
 		null

@@ -1,8 +1,11 @@
 # import sketches.*
 # import views.*
+# import PWPData
 class App
 
 	sketches: null
+
+	data: null
 
 	currentSketch: 0
 	numSketches: null
@@ -24,18 +27,18 @@ class App
 	spacePressed: false
 
 	constructor: ->
-		@renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
+		@data = new PWPData().data;
 
-		toDo = [Smoky, Trails, Dots, Spirals]
+		@renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
 
 		@textures = [PIXI.Texture.fromImage('img/node.png')]
 
 		@sketches = []
-		for i in toDo
-			@sketches.push {sketch:new i(@renderer), id:i.id}
+		for i in @data
+			@sketches.push {sketch:new i.className(@renderer), id:i.classId}
 
 		@numSketches = @sketches.length
-		@currentSketch = @sketches.length - 1
+		# @currentSketch = @sketches.length - 1
 
 		@interface = document.getElementById('interface')
 
@@ -110,12 +113,12 @@ class App
 		@menuOpen = !@menuOpen
 		if @menuOpen
 			$(@menuPanel).css 'z-index', '1200'
-			TweenMax.to @menuPanel, 0.5, {css:{opacity:1}, ease:Power4.easeOut}
+			TweenMax.to @menuPanel, 1, {css:{opacity:1}, ease:Power4.easeOut}
 			# TweenMax.to @menuButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
 			TweenMax.to @infoButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
 			# TweenMax.to @interface, 0.5, {css:{opacity:0}, ease:Power4.easeOut}
 		else
-			TweenMax.to @menuPanel, 0.5, {css:{opacity:0}, ease:Power4.easeOut, onComplete:=>
+			TweenMax.to @menuPanel, 1, {css:{opacity:0}, ease:Power4.easeOut, onComplete:=>
 				$(@menuPanel).css 'z-index','1'
 			}
 			TweenMax.to @menuButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
@@ -152,6 +155,7 @@ class App
 		null
 
 	next: =>
+		if @infoOpen then @handleInfoClick()
 		lastSketch = @sketches[@currentSketch]
 		@changeSketch('next')
 		@unloadSketch(lastSketch.sketch)
@@ -159,6 +163,7 @@ class App
 		null
 
 	prev: =>
+		if @infoOpen then @handleInfoClick()
 		lastSketch = @sketches[@currentSketch]
 		@changeSketch('prev')
 		@unloadSketch(lastSketch.sketch)
@@ -171,9 +176,9 @@ class App
 		nextId = @currentSketch+1
 		if nextId == @sketches.length then nextId = 0
 
-		@currentButton.innerHTML = '<p class="title-copy">'+@sketches[@currentSketch].id+'</p>'+@generateIpsum(@sketches[@currentSketch].id)
-		@prevButton.innerHTML = '<p class="title-copy">'+@sketches[prevId].id+'</p>'
-		@nextButton.innerHTML = '<p class="title-copy">'+@sketches[nextId].id+'</p>'
+		@currentButton.innerHTML = '<h1>'+@sketches[@currentSketch].id+'</h1><div id="current-sketch-content">'+@getSketchCopy()+'</div>'
+		@prevButton.innerHTML = '<h1>'+@sketches[prevId].id+'</h1>'
+		@nextButton.innerHTML = '<h1>'+@sketches[nextId].id+'</h1>'
 		null
 
 	unloadSketch: (sketch) ->
@@ -198,6 +203,11 @@ class App
 		document.body.appendChild @sketches[@currentSketch].sketch.view
 		TweenMax.to @sketches[@currentSketch].sketch.view, 1, { css:{ opacity:1 }, ease:Power4.easeOut }
 		null
+
+	getSketchCopy: ->
+		str = "<p class='information-panel-copy'>"+@data[@currentSketch].instructions+"</p>"
+		str += "<p class='information-panel-copy'>"+@data[@currentSketch].description+"</p>"
+		return str;
 
 	generateIpsum: (label) ->
 		str = "<p class='body-copy'>Well, the way they make shows is, they make one show. That show's called a pilot. Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows. Some pilots get picked and become television programs. Some don't, become nothing. She starred in one of the ones that became nothing.<!-- please do not remove this line --><div style='display:none;'><a href='http://slipsum.com'>lorem ipsum</a></div></p>"
