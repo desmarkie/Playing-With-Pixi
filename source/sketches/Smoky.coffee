@@ -47,46 +47,20 @@ class Smoky extends Sketch
 		window.onmousemove = @mouseMove
 
 		super()
-		console.log 'LOAD DONE :: '+Smoky.id
 
 	unload: =>
 		window.onmousemove = null
-		###
-		for sp in @sprites
-			@stage.removeChild sp
-			sp = null
-
-		for node in @nodes
-			node = null
-
-		@windowWidth = @windowHeight = null
-		@areaWidth = @areaHeight = null
-		@renderer = null
-		@stage = null
-		@view = null
-		@nodes = []
-		@sprites = []
-		###
-		super()
-
-		# @tex.destroy true
-
-		console.log 'DESTROYED IT '+@cancelled
-
 		null
 
 	resize: =>
 		null
 
 	createNodes: ->
-		console.log 'CREATING NODES'
 		for i in [0..@numNodes] by 1
 			@nodes.push new Node(Math.random()*@windowWidth, Math.random()*@windowHeight)
 		null
 
 	createSprites: ->
-		console.log 'CREATING SPRITES'
-		# @tex = PIXI.Texture.fromImage('/img/node.png?cb='+new Date().getTime())
 		@tex = window.app.textures[0]
 		for i in [0..@numNodes] by 1
 			sp = new PIXI.Sprite @tex

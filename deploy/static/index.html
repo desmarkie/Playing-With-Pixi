@@ -19,11 +19,12 @@
 			<div id="menu-button-holder"><i id="menu-button" class="icon-menu-outline"></i></div>
 		</div>
 		<div id="menu-panel">
-			<div id="previous-sketch"></div>
+			<div id="menu-panel-bg"></div>
+			<div id="menu-buttons"></div>
 			<div id="line-a" class="white-line"></div>
 			<div id="current-sketch"></div>
-			<div id="line-b" class="white-line"></div>
-			<div id="next-sketch"></div>
+			<!-- <div id="line-b" class="white-line"></div> -->
+			<!-- <div id="next-sketch"></div> -->
 		</div>
 		<div id="information-panel">
 			<div id="information-panel-bg"></div>
@@ -46,7 +47,7 @@
 		document.body.onload = function(e){
 			app = new App();
 			app.loadCurrentSketch();
-			app.updateInfoContent();
+			app.menuPanel.updateInfoContent();
 		}
 	</script>
 </html>

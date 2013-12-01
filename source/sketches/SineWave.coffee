@@ -61,7 +61,7 @@ class SineWave extends Sketch
 		super()
 		if @cancelled then return
 
-		console.log 'amplitude = '+@amplitude
+		# console.log 'amplitude = '+@amplitude
 
 		spacing = window.innerWidth / @numSprites
 
