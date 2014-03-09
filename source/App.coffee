@@ -22,9 +22,12 @@ class App
 	infoPanel: null
 	menuPanel: null
 
-	stageColor: 0x0e0e0e
+	stageColor: 0x0a0a0a
 
 	spacePressed: false
+
+	degToRad: Math.PI / 180
+	radToDeg: 180 / Math.PI
 
 	constructor: ->
 		@data = new PWPData().data;

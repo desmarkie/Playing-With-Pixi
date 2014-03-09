@@ -53,8 +53,10 @@ canvas{
 	top: 16px;
 	right: 16px;
 	z-index: 2300;
-	cursor: pointer;
 	color:#e3e3e3;
+}
+.handCursor{
+	cursor: pointer;
 }
 #menu-panel{
 	width: 100%;
@@ -75,10 +77,10 @@ canvas{
 	height: 100%;
 	background-color: rgba(0, 0, 0, 0.85);
 }
-#information-panel-content{
-	background: rgba(0, 0, 0, 0.55);
+#information-panel-content, #current-sketch{
+	/*background: rgba(0, 0, 0, 0.55);*/	
 	height: 100%;
-	width: 50%;
+	width: 100%;
 	position: absolute;
 	left: 25%;
 	top: 0;
@@ -86,7 +88,9 @@ canvas{
 	vertical-align: text-top;
 }
 #information-panel-content-holder, #current-sketch-content{
-	margin: 20% 0 0 32px;
+	position: absolute;
+	top: 20%;
+	margin-left: 32px;
 }
 .information-panel-copy{
 	width:168px;
@@ -145,13 +149,7 @@ p.menu-button{
 	font-size: 1.3em;
 	font-weight: 300;
 }
-#current-sketch{
-	color: #dedede;
-	font-weight: 300;
-	text-transform: uppercase;
-}
 #menu-buttons{
-	height: 100%;
 	width: 25%;
 	position: absolute;
 	left: 0;
@@ -165,7 +163,7 @@ p.menu-button{
 }
 #current-sketch{
 	height: 100%;
-	width: 50%;
+	width: 75%;
 	position: absolute;
 	left: 25%;
 	top: 0;

@@ -10,6 +10,9 @@ class Menu
 
 		@createButtons()
 
+		$(@currentButton).css 'cursor', 'pointer'
+		@currentButton.onclick = @app.handleMenuClick
+
 		@buttons[@app.currentSketch].select()
 
 	show: ->
@@ -39,7 +42,22 @@ class Menu
 		nextId = @app.currentSketch+1
 		if nextId == @app.sketches.length then nextId = 0
 
-		@currentButton.innerHTML = '<h1>'+@data[@app.currentSketch].classId+'</h1><div id="current-sketch-content">'+@getSketchCopy()+'</div>'
+		TweenMax.to @currentButton, 0.5, {css:{opacity:0}, ease:Power4.easeOut, onComplete: =>
+			@currentButton.innerHTML = '<h1 style="opacity:0">'+@data[@app.currentSketch].classId+'</h1><div id="current-sketch-content">'+@getSketchCopy()+'</div>'
+			# TweenMax.to @currentButton, 0.5, {css:{opacity:1}, ease:Power4.easeOut}
+			@currentHeader = @currentButton.getElementsByTagName('h1')[0];
+			@currentHolder = document.getElementById('current-sketch-content')
+			@paras = @currentHolder.getElementsByTagName('p')
+			$(@currentButton).css 'opacity', '1'
+			TweenMax.to @currentHeader, 0.5, {css:{opacity:1}, ease:Power4.easeOut}
+			for i in [0..@paras.length-1] by 1
+				if i < @paras.length-1
+					TweenMax.to @paras[i], 0.5, {css:{opacity:1}, ease:Power4.easeOut, delay:0.3+(i*0.2)}
+				else
+					TweenMax.to @paras[i], 0.5, {css:{opacity:1}, ease:Power4.easeOut, delay:0.3+(i*0.2), onComplete:=>
+						console.log 'ALL TWEENING DONE'
+					}
+		}
 
 		for but in @buttons
 			if but.id != @app.currentSketch and but.isActive then but.deselect()
@@ -47,8 +65,8 @@ class Menu
 		null
 
 	getSketchCopy: ->
-		str = "<p class='information-panel-copy'>"+@data[@app.currentSketch].instructions+"</p>"
-		str += "<p class='information-panel-copy'>"+@data[@app.currentSketch].description+"</p>"
+		str = "<p class='information-panel-copy' style='opacity:0'>"+@data[@app.currentSketch].instructions+"</p>"
+		str += "<p class='information-panel-copy' style='opacity:0'>"+@data[@app.currentSketch].description+"</p>"
 		return str;
 
 	handleDivOver: (e) =>

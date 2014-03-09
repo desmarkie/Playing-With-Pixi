@@ -1,18 +1,28 @@
 class Node
 
-	x: 0
-	y: 0
-	view: null
-	xVel: 0
-	yVel: 0
-	scale: 1
-	sinPos: 0
-	sinIncrement: 1
-	scaleAmount: 0.5
+	constructor: (x = 0, y = 0, z = 0) ->
+		@position = new Point x, y, z
+		@velocity = new Point()
 
-	constructor: (@x, @y, @view) ->
-		@xVel = 3 - (6*Math.random())
-		@yVel = 3 - (6*Math.random())
-		@sinPos = Math.random() * 360
-		@sinIncrement = Math.random() * 0.5
-		@scaleAmount = (Math.random() * 2)
+		@positions = []
+		@positions.push @position.clone()
+
+		@recordedPositions = 1
+
+	moveTo: (x = 0, y = 0, z = 0) =>
+		@position.x = x
+		@position.y = y
+		@position.z = z
+		@positions.push @position.clone()
+		@checkPositionsLength()
+		null
+
+	checkPositionsLength: =>
+		while @positions.length > @recordedPositions
+			@positions.splice 0, 1
+		null
+
+	fillPositions: =>
+		while @positions.length < @recordedPositions
+			@positions.push @position.clone()
+		null

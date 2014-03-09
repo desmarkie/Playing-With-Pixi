@@ -1,5 +1,5 @@
 # import sketches.Sketch
-# import objects.Node
+# import objects.*
 class Smoky extends Sketch
 
 	@id: 'Smoky'
@@ -50,6 +50,7 @@ class Smoky extends Sketch
 
 	unload: =>
 		window.onmousemove = null
+		super()
 		null
 
 	resize: =>
@@ -57,7 +58,13 @@ class Smoky extends Sketch
 
 	createNodes: ->
 		for i in [0..@numNodes] by 1
-			@nodes.push new Node(Math.random()*@windowWidth, Math.random()*@windowHeight)
+			n = new Node(Math.random()*@windowWidth, Math.random()*@windowHeight)
+			n.velocity.x = 3 - (6*Math.random())
+			n.velocity.y = 3 - (6*Math.random())
+			n.sinPos = Math.random() * 360
+			n.sinIncrement = Math.random() * 0.5
+			n.scaleAmount = (Math.random() * 2)
+			@nodes.push n
 		null
 
 	createSprites: ->
@@ -74,27 +81,29 @@ class Smoky extends Sketch
 
 	updateSprites: ->
 		for i in [0..@numNodes] by 1
-			@nodes[i].x += @nodes[i].xVel
-			@nodes[i].y += @nodes[i].yVel
+			node = @nodes[i]
+			node.position.x += node.velocity.x
+			node.position.y += node.velocity.y
 
-			@nodes[i].sinPos += @nodes[i].sinIncrement
-			@nodes[i].sinPos %= 360
-			@nodes[i].scale = 10 + (Math.sin(@nodes[i].sinPos*(Math.PI/180)) * @nodes[i].scaleAmount)
+			node.sinPos += node.sinIncrement
+			node.sinPos %= 360
+			node.scale = 10 + (Math.sin(node.sinPos*(Math.PI/180)) * node.scaleAmount)
 
-			if @nodes[i].x > @windowWidth + 200 then @nodes[i].x -= @areaWidth
-			else if @nodes[i].x < -200 then @nodes[i].x += @areaWidth
+			if node.position.x > @windowWidth + 200 then node.position.x -= @areaWidth
+			else if node.position.x < -200 then node.position.x += @areaWidth
 
-			if @nodes[i].y > @windowHeight + 200 then @nodes[i].y -= @areaHeight
-			else if @nodes[i].y < -200 then @nodes[i].y += @areaHeight
+			if node.position.y > @windowHeight + 200 then node.position.y -= @areaHeight
+			else if node.position.y < -200 then node.position.y += @areaHeight
 
-			distTo = @distanceTo(@nodes[i], {x:@curX, y:@curY})
+			distTo = @distanceTo({x:node.position.x, y:node.position.y}, {x:@curX, y:@curY})
 			if distTo.dist < @checkDistSq
-				@nodes[i].xVel = ((distTo.xDif*-1) / @checkDist) * 5
-				@nodes[i].yVel = ((distTo.yDif*-1) / @checkDist) * 5
+				node.velocity.x = ((distTo.xDif*-1) / @checkDist) * 5
+				node.velocity.y = ((distTo.yDif*-1) / @checkDist) * 5
 
-			@sprites[i].position.x = @nodes[i].x
-			@sprites[i].position.y = @nodes[i].y
-			@sprites[i].scale.x = @sprites[i].scale.y = @nodes[i].scale
+			sp = @sprites[i]
+			sp.position.x = node.position.x
+			sp.position.y = node.position.y
+			sp.scale.x = sp.scale.y = node.scale
 		null
 
 	distanceTo: (object, target) ->

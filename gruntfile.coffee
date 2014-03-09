@@ -8,6 +8,7 @@ module.exports = (grunt) ->
 				options:
 					port: 9000
 					base: 'deploy/static/'
+					hostname: ''
 
 		folder: 
 			src:	'source/'

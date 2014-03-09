@@ -30,5 +30,35 @@ class PWPData
 			classId:"Sine Wave",
 			description:"A lot of the previous experiments used sine values of some sort and they look pretty cool too. This one started out as a plain old sine wave, but I chucked in some rotation after staring at spirals and it makes some equally pleasing patterns when it strobes.",
 			instructions:"Play with the settings in this one"
+		},
+		{
+			className:Stacks,
+			classId:"Stacks",
+			description:"It's sort of like an abacus.",
+			instructions:"Just watch it"
+		},
+		{
+			className:Fractals,
+			classId:"Fractals",
+			description:"....",
+			instructions:"...."
+		},
+		{
+			className:Radar,
+			classId:"Radar",
+			description:"....",
+			instructions:"...."
+		},
+		{
+			className:Ribbon,
+			classId:"Ribbon",
+			description:"....",
+			instructions:"...."
+		},
+		{
+			className:Orbits,
+			classId:"Orbits",
+			description:"....",
+			instructions:"...."
 		}
 	]

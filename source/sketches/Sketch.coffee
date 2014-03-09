@@ -32,3 +32,12 @@ class Sketch
 	resize: ->
 		# override me
 		null
+
+	makeGui: ->
+		gui = new dat.GUI({autoPlace:false})
+		gui.domElement.style.zIndex = 100
+		gui.domElement.style.position = 'absolute'
+		gui.domElement.style.top = 0
+		gui.domElement.style.left = 0
+		gui.domElement.style.height = 'auto'
+		return gui
