@@ -193,13 +193,10 @@ class Dots extends Sketch
 		@xLimit = @dots.length
 		@yLimit = @dots[0].length
 
-		window.onmousemove = @handleMouseMove
-
 		null
 
 	unload: =>
 		super()
-		window.onmousemove = null
 		null
 
 
@@ -207,6 +204,8 @@ class Dots extends Sketch
 	update: =>
 		super()
 		if @cancelled then return
+
+		@handleMouseMove()
 
 		if @xFollow
 			@xCounter = @curX
@@ -292,9 +291,9 @@ class Dots extends Sketch
 		null
 
 
-	handleMouseMove: (e) =>
-		@mouseX = e.pageX
-		@mouseY = e.pageY
+	handleMouseMove: =>
+		@mouseX = window.app.pointerPosition.x
+		@mouseY = window.app.pointerPosition.y
 		if @mouseTrail
 			xid = Math.floor(@mouseX / @spriteSize)
 			yid = Math.floor(@mouseY / @spriteSize)

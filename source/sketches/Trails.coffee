@@ -27,7 +27,7 @@ class Trails extends Sketch
 			@gui.domElement.style.display = 'block'
 			@gui.close()
 			@view.appendChild @renderer.view
-			window.onmousemove = @handleMouseMove
+			# window.onmousemove = @handleMouseMove
 			super()
 		else
 			@curX = @mouseX = window.innerWidth * 0.5
@@ -44,7 +44,7 @@ class Trails extends Sketch
 
 			@view = document.createElement('div')
 			@view.appendChild @renderer.view
-			window.onmousemove = @handleMouseMove
+			# window.onmousemove = @handleMouseMove
 			@gui = new dat.GUI({autoPlace:false})
 			@gui.domElement.style.zIndex = 100
 			@gui.domElement.style.position = 'absolute'
@@ -66,7 +66,7 @@ class Trails extends Sketch
 		null
 
 	unload: =>
-		window.onmousemove = null
+		# window.onmousemove = null
 		@gui.domElement.style.display = 'none'
 		super()
 		null
@@ -77,8 +77,8 @@ class Trails extends Sketch
 
 		angle = MathUtils.degToRad(Math.sin(@sinOffset) * @wobbleAngle)
 
-		vecX = @mouseX - @curX
-		vecY = @mouseY - @curY
+		vecX = window.app.pointerPosition.x - @curX
+		vecY = window.app.pointerPosition.y - @curY
 
 		newX = (vecX * Math.cos(angle)) - (vecY * Math.sin(angle))
 		newY = (vecX * Math.sin(angle)) + (vecY * Math.cos(angle))
@@ -106,9 +106,4 @@ class Trails extends Sketch
 		@sinOffset += @sinIncrement + @toAdd
 		@sinOffset %= MathUtils.twoPI
 
-		null
-
-	handleMouseMove: (e) =>
-		@mouseX = e.pageX
-		@mouseY = e.pageY
 		null

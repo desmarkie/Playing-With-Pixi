@@ -58,6 +58,26 @@ class App
 		@menuPanel = new Menu(this, @data)
 		@infoPanel = new InfoPanel()
 
+		@pointerPosition = {x:window.innerWidth*0.5, y:window.innerHeight*0.5}
+		@mousePressed = false
+		window.onmousemove = (e) =>
+			@pointerPosition.x = e.pageX
+			@pointerPosition.y = e.pageY
+			null
+
+		window.onmousedown = =>
+			@mousePressed = true
+			null
+
+		window.onmouseup = =>
+			@mousePressed = false
+			null
+
+		window.ontouch = (e) =>
+			@pointerPosition.x = e.touches[0].pageX
+			@pointerPosition.y = e.touches[0].pageY
+			null
+
 		@menuPanel.enable()
 
 		window.onresize = =>
@@ -65,6 +85,7 @@ class App
 			@renderer.resize window.innerWidth, window.innerHeight
 			for sketch in @sketches
 				sketch.sketch.resize()
+			null
 
 		@init()
 

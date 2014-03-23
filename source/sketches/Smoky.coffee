@@ -18,7 +18,7 @@ class Smoky extends Sketch
 
 	load: =>
 		if @loaded 
-			window.onmousemove = @mouseMove
+			# window.onmousemove = @mouseMove
 			@windowWidth = window.innerWidth;
 			@windowHeight = window.innerHeight;
 
@@ -44,12 +44,12 @@ class Smoky extends Sketch
 
 		@createSprites()
 
-		window.onmousemove = @mouseMove
+		# window.onmousemove = @mouseMove
 
 		super()
 
 	unload: =>
-		window.onmousemove = null
+		# window.onmousemove = null
 		super()
 		null
 
@@ -114,6 +114,8 @@ class Smoky extends Sketch
 	update: =>
 		super()
 		if @cancelled then return
+		@curX = window.app.pointerPosition.x
+		@curY = window.app.pointerPosition.y
 		@updateSprites()
 		@renderer.render @stage
 		null

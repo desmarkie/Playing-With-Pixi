@@ -60,5 +60,17 @@ class PWPData
 			classId:"Orbits",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:Comets,
+			classId:"Comets",
+			description:"....",
+			instructions:"...."
+		},
+		{
+			className:PlanktonTank,
+			classId:"PlanktonTank",
+			description:"....",
+			instructions:"...."
 		}
 	]
