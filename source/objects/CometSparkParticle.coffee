@@ -1,4 +1,5 @@
 # import objects.Node
+# import utils.ColourConversion
 class CometSparkParticle extends Node
 
 	constructor: (x = 0, y = 0, z = 0) ->
@@ -18,9 +19,12 @@ class CometSparkParticle extends Node
 
 		@newLife()
 
+		@hsb = [300, 66, 100]
+		@hex = ColourConversion.hsbToHex @hsb
+
 		@view = new PIXI.Sprite window.app.textures[0]
 		@view.pivot.x = @view.pivot.y = 16
-		@view.tint = 0xFF55FF
+		@view.tint = @hex
 
 	newLife: =>
 		@totalLife = Math.round(@minLife + (Math.random() * (@maxLife - @minLife)))
@@ -29,6 +33,12 @@ class CometSparkParticle extends Node
 		@velocity.y = @minSpeed + (Math.random() * (@maxSpeed - @minSpeed))
 		if Math.random() < 0.5 then @velocity.x *= -1
 		if Math.random() < 0.5 then @velocity.y *= -1
+		null
+
+	setColor: (value) =>
+		@hsb[0] = value
+		@hex = ColourConversion.hsbToHex @hsb
+		@view.tint = @hex
 		null
 
 	update: =>

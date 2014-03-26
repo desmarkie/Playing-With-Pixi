@@ -72,5 +72,17 @@ class PWPData
 			classId:"PlanktonTank",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:Spirograph,
+			classId:"Spirograph",
+			description:"....",
+			instructions:"...."
+		},
+		{
+			className:Squids,
+			classId:"Squids",
+			description:"....",
+			instructions:"...."
 		}
 	]

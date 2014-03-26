@@ -1,4 +1,6 @@
 # import objects.Node
+# import utils.MathUtils
+# import utils.ColourConversion
 class Plankton extends Node
 
 	constructor: ->
@@ -9,11 +11,11 @@ class Plankton extends Node
 		@graphics = new PIXI.Graphics()
 		@view.addChild @graphics
 
-		@degToRad = Math.PI / 180
-
 		@gut = new PIXI.Sprite window.app.textures[0]
 		@gut.pivot.x = @gut.pivot.y = 16
-		@gut.tint = Math.random() * 0xFFFFFF
+		hsb = [Math.random()*360, 100, 100]
+		hex = ColourConversion.hsbToHex hsb
+		@gut.tint = hex
 		@view.addChild @gut
 
 		@angle = 0
@@ -56,8 +58,8 @@ class Plankton extends Node
 		@drawLimbs()
 
 		if @tailProps.dir is 1
-			sin = Math.sin(@angle*@degToRad)
-			cos = Math.cos(@angle*@degToRad)
+			sin = Math.sin(MathUtils.degToRad @angle)
+			cos = Math.cos(MathUtils.degToRad @angle)
 			vx = (-sin * 1) * @tailProps.accel
 			vy = (cos * 1) * @tailProps.accel
 			@velocity.x += vx
@@ -77,7 +79,7 @@ class Plankton extends Node
 
 		@view.position.x = @position.x
 		@view.position.y = @position.y
-		@view.rotation = (@angle+180) * @degToRad
+		@view.rotation = MathUtils.degToRad(@angle+180)
 		null
 
 	updateTail: =>
@@ -91,15 +93,15 @@ class Plankton extends Node
 			if @tailProps.dist > @tailProps.max then @tailProps.dir *= -1
 
 		@tail.position.y = @tailProps.dist
-		sin = Math.sin(30 * @degToRad)
-		cos = Math.cos(30 * @degToRad)
+		sin = Math.sin(MathUtils.degToRad 30)
+		cos = Math.cos(MathUtils.degToRad 30)
 		nx = -sin * @tailProps.dist
 		ny = cos * @tailProps.dist
 		@tailLeft.position.x = nx
 		@tailLeft.position.y = ny
 
-		sin = Math.sin(-30 * @degToRad)
-		cos = Math.cos(-30 * @degToRad)
+		sin = Math.sin(MathUtils.degToRad -30)
+		cos = Math.cos(MathUtils.degToRad -30)
 		nx = -sin * @tailProps.dist
 		ny = cos * @tailProps.dist
 		@tailRight.position.x = nx

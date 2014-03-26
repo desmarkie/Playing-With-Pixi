@@ -11,8 +11,8 @@ class PlanktonTank extends Sketch
 
 			@view = document.createElement 'div'
 
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
+			# @gui = @makeGui()
+			# @view.appendChild @gui.domElement
 
 			@numPlankton = 30
 

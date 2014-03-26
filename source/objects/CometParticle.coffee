@@ -1,5 +1,6 @@
 # import objects.Node
 # import objects.CometSparkParticle
+# import utils.ColourConversion
 class CometParticle extends Node
 
 	constructor: (x = 0, y = 0, z = 0) ->
@@ -25,11 +26,28 @@ class CometParticle extends Node
 		@main = new PIXI.Sprite window.app.textures[0]
 		@main.pivot.x = @main.pivot.y = 16
 
+		@color = 240
+		@setColor @color
+
+		@sparkColor = 300
+
 		@view.addChild @main
-		@main.tint = 0xd0d0ff
 
 		for i in [0...@maxChildren]
 			@fireSpark()
+
+	setColor: (value) =>
+		@color = value
+		hsb = [@color, 18, 100]
+		hex = ColourConversion.hsbToHex hsb
+		@main.tint = hex
+		null
+
+	setSparkColor: (value) =>
+		@sparkColor = value
+		for spark in @children
+			spark.setColor @sparkColor
+		null
 
 	randomiseVelocity: (ranx = true, rany = true) =>
 		if ranx then @velocity.x = @minSpeed + (Math.random() * (@maxSpeed - @minSpeed))
@@ -84,6 +102,7 @@ class CometParticle extends Node
 			@pool.splice 0, 1
 		else
 			spark = new CometSparkParticle()
+			spark.setColor @sparkColor
 
 		spark.position.x = 0
 		spark.position.y = 0
