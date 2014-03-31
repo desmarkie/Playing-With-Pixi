@@ -84,5 +84,11 @@ class PWPData
 			classId:"Squids",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:PictureTile,
+			classId:"PictureTile",
+			description:"....",
+			instructions:"...."
 		}
 	]

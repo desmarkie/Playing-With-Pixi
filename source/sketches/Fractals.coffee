@@ -68,13 +68,14 @@ class Fractals extends Sketch
 		null
 
 	redraw: =>
-		@renderTex.destroy()
-		@renderTex = new PIXI.RenderTexture(window.innerWidth, window.innerHeight)
-		@renderView.setTexture @renderTex
+		if @renderView
+			@renderTex.destroy()
+			@renderTex = new PIXI.RenderTexture(window.innerWidth, window.innerHeight)
+			@renderView.setTexture @renderTex
 
-		@sprites = []
+			@sprites = []
 
-		@createSprites()
+			@createSprites()
 		null
 
 	createSprites: ->

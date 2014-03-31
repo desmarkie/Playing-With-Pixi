@@ -89,8 +89,9 @@ class Spirals extends Sketch
 		null
 
 	resize: =>
-		@midPoint.x = window.innerWidth * 0.5
-		@midPoint.y = window.innerHeight * 0.5
+		if @midPoint != null
+			@midPoint.x = window.innerWidth * 0.5
+			@midPoint.y = window.innerHeight * 0.5
 		@sqDist = (window.innerWidth*0.5)*(window.innerWidth*0.5)
 		# console.log 'RESIZED '+@midPoint
 		null
