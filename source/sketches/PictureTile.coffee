@@ -40,11 +40,6 @@ class PictureTile extends Sketch
 			@canvas.style.left = @camWidth + 'px'
 			@canvas.style.zIndex = 10
 
-			# @graphics = new PIXI.Graphics()
-			# @graphics.position.x = (window.innerWidth - (@camWidth * (@size+1))) * 0.5
-			# @graphics.position.y = (window.innerHeight - (@camHeight * (@size+1))) * 0.5
-			# @stage.addChild @graphics
-
 			sx = ((window.innerWidth - (@camWidth*@size)) * 0.5) + 16
 			sy = ((window.innerHeight - (@camHeight*@size)) * 0.5) + 16
 			@sprites = []
@@ -59,16 +54,10 @@ class PictureTile extends Sketch
 					@stage.addChild p
 					@sprites[i][j] = p
 
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
-
-			# @gui.add @, 'size', 1, 20, 1
 
 		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia
 		if navigator.getUserMedia
 			navigator.getUserMedia {video:true}, @handleVideo, @handleVideoError
-			# @view.appendChild @video
-			# @view.appendChild @canvas
 
 
 		@view.appendChild @renderer.view
@@ -113,7 +102,6 @@ class PictureTile extends Sketch
 		null
 
 	drawPixels: =>
-		# @graphics.clear()
 		data = @canvas.getContext('2d').getImageData(0, 0, @camWidth, @camHeight).data
 		x = 0
 		y = 0
@@ -121,18 +109,13 @@ class PictureTile extends Sketch
 			sprite = @sprites[x][y]
 			rgb = [data[i], data[i+1], data[i+2]]
 			hex = ColourConversion.rgbToHex rgb
-			# @graphics.beginFill hex
 			sprite.tint = hex
 			hsb = ColourConversion.hexToHsb hex
 			offset = hsb[2]*0.01
 			sprite.scale.x = sprite.scale.y = ((@size / 32)*1.5) * offset
 			
-			# @graphics.drawRect (x*(@size+1)) + ((1 - offset)*(@size*0.5)), (y*(@size+1)) + ((1 - offset)*(@size*0.5)), @size * offset, @size * offset
-			# @graphics.drawCircle x*(@size+1), y*(@size+1), (@size*0.5) * offset
-			# @graphics.endFill()
 			x++
 			if x is @camWidth
 				x = 0
 				y++
-
 		null

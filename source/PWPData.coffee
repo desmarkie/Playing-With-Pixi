@@ -90,5 +90,11 @@ class PWPData
 			classId:"PictureTile",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:ShapeShifter,
+			classId:"ShapeShifter",
+			description:"....",
+			instructions:"...."
 		}
 	]

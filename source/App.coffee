@@ -41,7 +41,7 @@ class App
 			@sketches.push {sketch:new i.className(@renderer), id:i.classId}
 
 		@numSketches = @sketches.length
-		# @currentSketch = @sketches.length - 1
+		@currentSketch = @sketches.length - 1
 
 		@interface = document.getElementById('interface')
 
