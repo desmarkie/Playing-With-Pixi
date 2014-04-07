@@ -1,26 +1,17 @@
 # import sketches.Sketch
 class PlanktonTank extends Sketch
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
-			# @gui = @makeGui()
-			# @view.appendChild @gui.domElement
-
 			@numPlankton = 30
 
 			@plankton = []
 
 			@addPlankton()
-
-		@view.appendChild @renderer.view
 
 		super()
 
@@ -38,7 +29,7 @@ class PlanktonTank extends Sketch
 		for p in @plankton
 			p.update()
 
-		@renderer.render @stage
+
 
 		null
 
@@ -46,7 +37,7 @@ class PlanktonTank extends Sketch
 		for i in [0...@numPlankton]
 			p = new Plankton()
 			@plankton.push p
-			@stage.addChild p.view
+			@view.addChild p.view
 		null
 
 	resize: =>

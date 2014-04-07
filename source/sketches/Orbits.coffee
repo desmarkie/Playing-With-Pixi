@@ -1,17 +1,12 @@
 class Orbits extends Sketch
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
+			@makeGui()
 
 			@midx = window.innerWidth * 0.5
 			@midy = window.innerHeight * 0.5
@@ -43,7 +38,7 @@ class Orbits extends Sketch
 				@nodes.push n
 
 			@graphics = new PIXI.Graphics()
-			@stage.addChild @graphics
+			@view.addChild @graphics
 
 			@gui.addColor @, 'tailColour'
 			@gui.add @, 'tailWidth', 2, 100
@@ -54,7 +49,7 @@ class Orbits extends Sketch
 			@gui.add @baseNode, 'xIncrement', 0.1, 359.9
 			@gui.add @baseNode, 'yIncrement', 0.1, 359.9
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 
@@ -94,7 +89,7 @@ class Orbits extends Sketch
 			n.moveTo newx, newy
 			@drawTail n
 
-		@renderer.render @stage
+
 
 		null
 

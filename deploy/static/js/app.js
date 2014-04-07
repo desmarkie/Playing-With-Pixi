@@ -5,38 +5,28 @@ var App, ColourConversion, CometParticle, CometSparkParticle, Comets, Dots, Frac
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Sketch = (function() {
-  Sketch.prototype.view = null;
-
-  Sketch.prototype.cancelled = false;
-
-  Sketch.prototype.loaded = false;
-
-  Sketch.prototype.renderer = null;
-
-  Sketch.prototype.stage = null;
-
-  function Sketch(renderer) {
+  function Sketch(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
+    this.view = new PIXI.DisplayObjectContainer();
+    this.cancelled = false;
+    this.loaded = false;
+    this.stage = null;
+    this.gui = null;
   }
 
   Sketch.prototype.load = function() {
     this.cancelled = false;
-    if (!this.loaded) {
-      requestAnimationFrame(this.update);
-    }
     this.loaded = true;
-    this.stage.visible = true;
     return null;
   };
 
   Sketch.prototype.unload = function() {
     this.cancelled = true;
-    this.stage.visible = false;
     return null;
   };
 
   Sketch.prototype.update = function() {
-    requestAnimationFrame(this.update);
     if (this.cancelled) {
       return;
     }
@@ -48,16 +38,15 @@ Sketch = (function() {
   };
 
   Sketch.prototype.makeGui = function() {
-    var gui;
-    gui = new dat.GUI({
+    this.gui = new dat.GUI({
       autoPlace: false
     });
-    gui.domElement.style.zIndex = 100;
-    gui.domElement.style.position = 'absolute';
-    gui.domElement.style.top = 0;
-    gui.domElement.style.left = 0;
-    gui.domElement.style.height = 'auto';
-    return gui;
+    this.gui.domElement.style.zIndex = 100;
+    this.gui.domElement.style.position = 'absolute';
+    this.gui.domElement.style.top = 0;
+    this.gui.domElement.style.left = 0;
+    this.gui.domElement.style.height = 'auto';
+    return null;
   };
 
   return Sketch;
@@ -471,8 +460,9 @@ Comets = (function(_super) {
 
   Comets.prototype.pool = [];
 
-  function Comets(renderer) {
+  function Comets(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.resize = __bind(this.resize, this);
     this.newTimeLimit = __bind(this.newTimeLimit, this);
     this.newComet = __bind(this.newComet, this);
@@ -484,16 +474,13 @@ Comets = (function(_super) {
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Comets.__super__.constructor.call(this, this.renderer);
+    Comets.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Comets.prototype.load = function() {
     var _this = this;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.maxComets = 40;
       this.minFrames = 5;
       this.maxFrames = 10;
@@ -517,9 +504,8 @@ Comets = (function(_super) {
         return _this.setSparkColor(_this.sparkColor);
       });
       this.graphics = new PIXI.Graphics();
-      this.stage.addChild(this.graphics);
+      this.view.addChild(this.graphics);
     }
-    this.view.appendChild(this.renderer.view);
     this.timeout = 1;
     Comets.__super__.load.call(this);
     return null;
@@ -556,11 +542,10 @@ Comets = (function(_super) {
       if (comet.life === 0 || comet.position.x > window.innerWidth) {
         this.particles.splice(i, 1);
         this.pool.push(comet);
-        this.stage.removeChild(comet.view);
+        this.view.removeChild(comet.view);
       }
     }
     this.drawPaths();
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -602,7 +587,7 @@ Comets = (function(_super) {
     var comet;
     comet = this.newComet();
     this.particles.push(comet);
-    this.stage.addChild(comet.view);
+    this.view.addChild(comet.view);
     return null;
   };
 
@@ -719,7 +704,7 @@ Dots = (function(_super) {
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
     this.updateGui = __bind(this.updateGui, this);
-    Dots.__super__.constructor.call(this, this.renderer);
+    Dots.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Dots.prototype.updateGui = function() {
@@ -735,19 +720,8 @@ Dots = (function(_super) {
   Dots.prototype.load = function() {
     var _this = this;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
       this.createSprites();
-      this.view = document.createElement('div');
-      this.view.appendChild(this.renderer.view);
-      this.gui = new dat.GUI({
-        autoPlace: false
-      });
-      this.gui.domElement.style.zIndex = 100;
-      this.gui.domElement.style.position = 'absolute';
-      this.gui.domElement.style.top = 0;
-      this.gui.domElement.style.left = 0;
-      this.gui.domElement.style.height = 'auto';
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.gui.add(this, 'spriteSize', 16, 128, 8).onFinishChange(function(val) {
         _this.spriteSize = val;
         return _this.resize();
@@ -901,7 +875,6 @@ Dots = (function(_super) {
       this.gui.close();
     }
     Dots.__super__.load.call(this);
-    this.view.appendChild(this.renderer.view);
     this.xLimit = this.dots.length;
     this.yLimit = this.dots[0].length;
     return null;
@@ -1005,7 +978,6 @@ Dots = (function(_super) {
     this.easeY += (this.mouseY - this.easeY) / 45;
     this.curX = Math.floor(this.easeX / this.spriteSize);
     this.curY = Math.floor(this.easeY / this.spriteSize);
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1014,7 +986,7 @@ Dots = (function(_super) {
     if (this.loaded) {
       for (i = _i = _ref = this.dots.length - 1; _i >= 0; i = _i += -1) {
         for (j = _j = _ref1 = this.dots[i].length - 1; _j >= 0; j = _j += -1) {
-          this.stage.removeChild(this.dots[i][j]);
+          this.view.removeChild(this.dots[i][j]);
           this.dots[i].splice(j, 1);
         }
       }
@@ -1076,7 +1048,7 @@ Dots = (function(_super) {
         sp.position.y = j * this.spriteSize;
         this.dots[i][j] = sp;
         sp.alpha = 0;
-        this.stage.addChild(sp);
+        this.view.addChild(sp);
       }
     }
     return null;
@@ -1099,8 +1071,9 @@ Fractals = (function(_super) {
 
   Fractals.prototype.deadSprites = [];
 
-  function Fractals(renderer) {
+  function Fractals(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.getSprite = __bind(this.getSprite, this);
     this.addSprite = __bind(this.addSprite, this);
     this.redraw = __bind(this.redraw, this);
@@ -1108,19 +1081,16 @@ Fractals = (function(_super) {
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Fractals.__super__.constructor.call(this, this.renderer);
+    Fractals.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Fractals.prototype.load = function() {
     var _this = this;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.renderTex = new PIXI.RenderTexture(window.innerWidth, window.innerHeight);
       this.renderView = new PIXI.Sprite(this.renderTex);
-      this.stage.addChild(this.renderView);
+      this.view.addChild(this.renderView);
       this.sprite = new PIXI.Sprite(window.app.textures[0]);
       this.sprite.pivot.x = this.sprite.pivot.y = 16;
       this.canvas = new PIXI.DisplayObjectContainer();
@@ -1143,7 +1113,6 @@ Fractals = (function(_super) {
       });
     }
     this.createSprites();
-    this.view.appendChild(this.renderer.view);
     Fractals.__super__.load.call(this);
     return null;
   };
@@ -1158,7 +1127,6 @@ Fractals = (function(_super) {
     if (this.cancelled) {
       return;
     }
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1216,23 +1184,21 @@ Fractals = (function(_super) {
 Orbits = (function(_super) {
   __extends(Orbits, _super);
 
-  function Orbits(renderer) {
+  function Orbits(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.drawTail = __bind(this.drawTail, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Orbits.__super__.constructor.call(this, this.renderer);
+    Orbits.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Orbits.prototype.load = function() {
     var i, n, tx, ty, _i, _ref;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.midx = window.innerWidth * 0.5;
       this.midy = window.innerHeight * 0.5;
       this.baseNode = new Node(this.midx, this.midy);
@@ -1259,7 +1225,7 @@ Orbits = (function(_super) {
         this.nodes.push(n);
       }
       this.graphics = new PIXI.Graphics();
-      this.stage.addChild(this.graphics);
+      this.view.addChild(this.graphics);
       this.gui.addColor(this, 'tailColour');
       this.gui.add(this, 'tailWidth', 2, 100);
       this.gui.add(this, 'maxSpeed', 2, 1000);
@@ -1269,7 +1235,6 @@ Orbits = (function(_super) {
       this.gui.add(this.baseNode, 'xIncrement', 0.1, 359.9);
       this.gui.add(this.baseNode, 'yIncrement', 0.1, 359.9);
     }
-    this.view.appendChild(this.renderer.view);
     Orbits.__super__.load.call(this);
     return null;
   };
@@ -1313,7 +1278,6 @@ Orbits = (function(_super) {
       n.moveTo(newx, newy);
       this.drawTail(n);
     }
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1346,8 +1310,9 @@ Orbits = (function(_super) {
 PictureTile = (function(_super) {
   __extends(PictureTile, _super);
 
-  function PictureTile(renderer) {
+  function PictureTile(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.drawPixels = __bind(this.drawPixels, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
@@ -1355,14 +1320,12 @@ PictureTile = (function(_super) {
     this.handleVideoError = __bind(this.handleVideoError, this);
     this.handleVideo = __bind(this.handleVideo, this);
     this.load = __bind(this.load, this);
-    PictureTile.__super__.constructor.call(this, this.renderer);
+    PictureTile.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   PictureTile.prototype.load = function() {
     var i, j, p, sx, sy, _i, _j, _ref, _ref1;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
       this.isConnected = false;
       this.camWidth = 40;
       this.camHeight = 30;
@@ -1398,7 +1361,7 @@ PictureTile = (function(_super) {
           p.position.x = sx + (i * this.size);
           p.position.y = sy + (j * this.size);
           p.scale.x = p.scale.y = this.size / 32;
-          this.stage.addChild(p);
+          this.view.addChild(p);
           this.sprites[i][j] = p;
         }
       }
@@ -1409,7 +1372,6 @@ PictureTile = (function(_super) {
         video: true
       }, this.handleVideo, this.handleVideoError);
     }
-    this.view.appendChild(this.renderer.view);
     PictureTile.__super__.load.call(this);
     return null;
   };
@@ -1446,7 +1408,6 @@ PictureTile = (function(_super) {
       this.canvas.getContext('2d').drawImage(this.video, 0, 0, this.camWidth, this.camHeight);
       this.drawPixels();
     }
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1483,25 +1444,23 @@ PictureTile = (function(_super) {
 PlanktonTank = (function(_super) {
   __extends(PlanktonTank, _super);
 
-  function PlanktonTank(renderer) {
+  function PlanktonTank(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.resize = __bind(this.resize, this);
     this.addPlankton = __bind(this.addPlankton, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    PlanktonTank.__super__.constructor.call(this, this.renderer);
+    PlanktonTank.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   PlanktonTank.prototype.load = function() {
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
       this.numPlankton = 30;
       this.plankton = [];
       this.addPlankton();
     }
-    this.view.appendChild(this.renderer.view);
     PlanktonTank.__super__.load.call(this);
     return null;
   };
@@ -1522,7 +1481,6 @@ PlanktonTank = (function(_super) {
       p = _ref[_i];
       p.update();
     }
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1531,7 +1489,7 @@ PlanktonTank = (function(_super) {
     for (i = _i = 0, _ref = this.numPlankton; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
       p = new Plankton();
       this.plankton.push(p);
-      this.stage.addChild(p.view);
+      this.view.addChild(p.view);
     }
     return null;
   };
@@ -1565,15 +1523,16 @@ Radar = (function(_super) {
 
   Radar.prototype.sprites = [];
 
-  function Radar(renderer) {
+  function Radar(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.createSprites = __bind(this.createSprites, this);
     this.scaleSprites = __bind(this.scaleSprites, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Radar.__super__.constructor.call(this, this.renderer);
+    Radar.__super__.constructor.call(this, this.renderer, this.name);
     this.midX = window.innerWidth * 0.5;
     this.midY = window.innerHeight * 0.5;
   }
@@ -1581,10 +1540,7 @@ Radar = (function(_super) {
   Radar.prototype.load = function() {
     var _this = this;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.gui.add(this, 'rotationSpeed', 0.1, 359.9);
       this.gui.add(this, 'radarWidth', 10, 1000);
       this.gui.add(this, 'minScale', 0.1, 10).onFinishChange(function() {
@@ -1602,10 +1558,9 @@ Radar = (function(_super) {
       this.currentTexture = this.renderTexture;
       this.canvas = new PIXI.Sprite(this.currentTexture);
       this.holder.addChild(this.canvas);
-      this.stage.addChild(this.holder);
+      this.view.addChild(this.holder);
       this.createSprites();
     }
-    this.view.appendChild(this.renderer.view);
     Radar.__super__.load.call(this);
     return null;
   };
@@ -1634,7 +1589,6 @@ Radar = (function(_super) {
     this.canvas.setTexture(this.renderTexture);
     this.renderTexture2.render(this.holder, new PIXI.Point(0, 0), false);
     this.renderTexture2.render(this.dummy, new PIXI.Point(0, 0), false);
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1678,21 +1632,20 @@ Radar = (function(_super) {
 Ribbon = (function(_super) {
   __extends(Ribbon, _super);
 
-  function Ribbon(renderer) {
+  function Ribbon(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.drawRibbon = __bind(this.drawRibbon, this);
     this.updateTrails = __bind(this.updateTrails, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Ribbon.__super__.constructor.call(this, this.renderer);
+    Ribbon.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Ribbon.prototype.load = function() {
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
       this.midx = window.innerWidth * 0.5;
       this.midy = window.innerHeight * 0.5;
       this.baseNode = new Node(this.midx, this.midy);
@@ -1717,9 +1670,8 @@ Ribbon = (function(_super) {
       this.graphics = new PIXI.Graphics();
       this.tailA = [];
       this.tailB = [];
-      this.stage.addChild(this.graphics);
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
+      this.view.addChild(this.graphics);
+      this.makeGui();
       this.gui.add(this, 'ribbonWidth', 1, 200);
       this.gui.addColor(this, 'tailColour');
       this.gui.add(this.baseNode, 'xOffset', 0, 1000);
@@ -1729,7 +1681,6 @@ Ribbon = (function(_super) {
       this.gui.add(this.nodeA, 'inc', 0.1, 359.9);
       this.gui.add(this.nodeB, 'inc', 0.1, 359.9);
     }
-    this.view.appendChild(this.renderer.view);
     Ribbon.__super__.load.call(this);
     return null;
   };
@@ -1760,7 +1711,6 @@ Ribbon = (function(_super) {
     ty = this.baseNode.position.y + (Math.sin(this.nodeB.sin * window.app.degToRad) * this.ribbonWidth);
     this.nodeB.moveTo(this.baseNode.position.x, ty);
     this.drawRibbon();
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1828,46 +1778,62 @@ MathUtils = (function() {
 ShapeShifter = (function(_super) {
   __extends(ShapeShifter, _super);
 
-  function ShapeShifter(renderer) {
+  function ShapeShifter(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.placeNodes = __bind(this.placeNodes, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    ShapeShifter.__super__.constructor.call(this, this.renderer);
+    ShapeShifter.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   ShapeShifter.prototype.load = function() {
-    var key, node, _ref;
+    var f, key, node, _ref,
+      _this = this;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
       this.holder = new PIXI.DisplayObjectContainer();
       this.holder.position.x = window.innerWidth * 0.5;
       this.holder.position.y = window.innerHeight * 0.5;
-      this.stage.addChild(this.holder);
-      this.shapes = ['cube', 'cylinder', 'torus'];
+      this.view.addChild(this.holder);
+      this.shapes = ['cube', 'cylinder', 'torus', 'sphere', 'sphere2', 'cone'];
       this.curShape = 0;
       this.size = 10;
       this.spacing = 32;
       this.xOffset = 0;
       this.yOffset = 0;
-      this.depthOn = true;
+      this.isometricScale = 1;
+      this.focalLength = 70;
+      this.cameraPosition = 1000;
+      this.depthOn = false;
+      this.perspectiveOn = true;
       this.numNodes = this.size * this.size * this.size;
       this.nodes = this.createNodes();
       this.sprites = this.createSprites();
       this.placeSprites();
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
-      this.gui.add(this, 'depthOn');
+      this.makeGui();
+      this.gui.add(this, 'depthOn').listen().onFinishChange(function() {
+        if (_this.depthOn && _this.perspectiveOn) {
+          return _this.perspectiveOn = false;
+        }
+      }).name('Isometric');
+      f = this.gui.addFolder('Isometric Controls');
+      f.add(this, 'isometricScale', 1, 3).name('Zoom');
+      this.gui.add(this, 'perspectiveOn').listen().onFinishChange(function() {
+        if (_this.depthOn && _this.perspectiveOn) {
+          return _this.depthOn = false;
+        }
+      }).name('Perspective');
+      f = this.gui.addFolder('Perspective Controls');
+      f.add(this, 'focalLength', 1, 300).name('Focal Length');
+      f.add(this, 'cameraPosition', 0, 2000).name('Z position');
     }
     _ref = this.nodes;
     for (key in _ref) {
       node = _ref[key];
       node.position.x = node.position.y = node.position.z = 0;
     }
-    this.view.appendChild(this.renderer.view);
     TweenMax.to(this, 0.75, {
       onComplete: this.placeNodes
     });
@@ -1897,7 +1863,6 @@ ShapeShifter = (function(_super) {
     this.xOffset = ((window.app.pointerPosition.x - hw) / w) * 360;
     this.yOffset = ((window.app.pointerPosition.y - hh) / h) * 360;
     this.placeSprites();
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -1927,7 +1892,7 @@ ShapeShifter = (function(_super) {
   };
 
   ShapeShifter.prototype.placeNodes = function() {
-    var angle, ct, halfSpace, i, inc, incInc, node, outerAngle, outerRadius, radius, tubeAngle, tubeRadius, x, y, z, _i, _j, _k, _ref, _ref1, _ref2, _x, _y, _z;
+    var angle, angle2, ct, curHeight, halfSpace, height, i, inc, incInc, node, outerAngle, outerRadius, radius, tubeAngle, tubeRadius, x, y, z, _i, _j, _k, _ref, _ref1, _ref2, _x, _y, _z;
     halfSpace = (this.spacing * this.size) * 0.5;
     i = 0;
     inc = 360 / this.size;
@@ -1950,15 +1915,36 @@ ShapeShifter = (function(_super) {
           } else if (this.shapes[this.curShape] === 'torus') {
             ct = (this.size * x) + y;
             outerAngle = MathUtils.degToRad(ct * incInc);
-            if (x === this.size - 1) {
-              console.log(MathUtils.radToDeg(outerAngle));
-            }
             tubeAngle = MathUtils.degToRad(z * inc);
             outerRadius = 128;
             tubeRadius = 64;
             _x = (outerRadius + (tubeRadius * Math.cos(tubeAngle))) * Math.cos(outerAngle);
             _z = (outerRadius + (tubeRadius * Math.cos(tubeAngle))) * Math.sin(outerAngle);
             _y = Math.sin(tubeAngle) * tubeRadius;
+          } else if (this.shapes[this.curShape] === 'sphere') {
+            ct = (this.size * x) + y;
+            angle = MathUtils.degToRad(ct * incInc);
+            angle2 = MathUtils.degToRad(z * inc) * 0.5;
+            radius = 128;
+            _z = radius * Math.cos(angle) * Math.sin(angle2);
+            _y = radius * Math.sin(angle) * Math.sin(angle2);
+            _x = radius * Math.cos(angle2);
+          } else if (this.shapes[this.curShape] === 'sphere2') {
+            angle = MathUtils.degToRad(y * inc);
+            angle2 = MathUtils.degToRad(z * inc) * 0.5;
+            radius = (128 / this.size) * x;
+            _x = radius * Math.cos(angle) * Math.sin(angle2);
+            _z = radius * Math.sin(angle) * Math.sin(angle2);
+            _y = radius * Math.cos(angle2);
+          } else if (this.shapes[this.curShape] === 'cone') {
+            ct = (this.size * x) + z;
+            angle = MathUtils.degToRad(ct * incInc);
+            height = 128;
+            curHeight = (y / this.size) * height;
+            radius = halfSpace;
+            _x = (radius * Math.cos(angle)) * ((height - curHeight) / height);
+            _y = -(curHeight - (height * 0.5));
+            _z = (radius * Math.sin(angle)) * ((height - curHeight) / height);
           }
           TweenMax.killTweensOf(node.position);
           TweenMax.to(node.position, 1.5, {
@@ -1992,7 +1978,7 @@ ShapeShifter = (function(_super) {
   };
 
   ShapeShifter.prototype.placeSprites = function() {
-    var i, max, min, node, scalar, sp, x, y, z, _i, _j, _k, _ref, _ref1, _ref2;
+    var div, i, max, min, node, scalar, sp, x, y, z, _i, _j, _k, _ref, _ref1, _ref2;
     i = 0;
     min = Math.log(0.1);
     max = Math.log(1);
@@ -2001,10 +1987,27 @@ ShapeShifter = (function(_super) {
         for (z = _k = 0, _ref2 = this.size; 0 <= _ref2 ? _k < _ref2 : _k > _ref2; z = 0 <= _ref2 ? ++_k : --_k) {
           sp = this.sprites[i];
           node = this.nodes[x + '_' + y + '_' + z];
-          scalar = this.depthOn ? node.position.z / (this.spacing * this.size) : 0;
-          sp.scale.x = sp.scale.y = 1 + Math.exp(min + scalar);
-          sp.position.x = (node.position.x * sp.scale.x) + (scalar * this.xOffset);
-          sp.position.y = (node.position.y * sp.scale.y) + (scalar * this.yOffset);
+          scalar = 0;
+          if (this.depthOn) {
+            scalar = node.position.z / (this.spacing * this.size);
+            sp.scale.x = sp.scale.y = (1 + Math.exp(min + scalar)) * this.isometricScale;
+            sp.position.x = (node.position.x * sp.scale.x) + (scalar * this.xOffset);
+            sp.position.y = (node.position.y * sp.scale.y) + (scalar * this.yOffset);
+          } else if (this.perspectiveOn) {
+            div = this.focalLength + (node.position.z - this.cameraPosition);
+            if (div !== 0) {
+              scalar = this.focalLength / div;
+            } else {
+              scalar = 0;
+            }
+            sp.scale.x = sp.scale.y = 10 * scalar;
+            sp.position.x = (node.position.x - this.xOffset) * (scalar * 10);
+            sp.position.y = -(node.position.y - this.yOffset) * (scalar * 10);
+          } else {
+            sp.scale.x = sp.scale.y = 1;
+            sp.position.x = node.position.x;
+            sp.position.y = node.position.y;
+          }
           sp.alpha = 0.4;
           i++;
         }
@@ -2042,32 +2045,22 @@ SineWave = (function(_super) {
 
   SineWave.prototype.sprites = [];
 
-  function SineWave(renderer) {
+  function SineWave(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.createSprites = __bind(this.createSprites, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    SineWave.__super__.constructor.call(this, this.renderer);
+    SineWave.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   SineWave.prototype.load = function() {
     this.midY = window.innerHeight * 0.5;
     this.midX = window.innerWidth * 0.5;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
       this.createSprites();
-      this.view = document.createElement('div');
-      this.view.appendChild(this.renderer.view);
-      this.gui = new dat.GUI({
-        autoPlace: false
-      });
-      this.gui.domElement.style.zIndex = 100;
-      this.gui.domElement.style.position = 'absolute';
-      this.gui.domElement.style.top = 0;
-      this.gui.domElement.style.left = 0;
-      this.gui.domElement.style.height = 'auto';
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.gui.add(this, 'waveLength', 10, 1000);
       this.gui.add(this, 'amplitude', 10, 500);
       this.gui.add(this, 'frequency', 1, 100);
@@ -2075,7 +2068,6 @@ SineWave = (function(_super) {
       this.gui.add(this, 'rotateSpeed', 0, 720);
       this.gui.close();
     }
-    this.view.appendChild(this.renderer.view);
     SineWave.__super__.load.call(this);
     return null;
   };
@@ -2109,7 +2101,6 @@ SineWave = (function(_super) {
     this.phase %= this.limit;
     this.rotateAngle += this.rotateSpeed;
     this.rotateAngle %= 360;
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -2122,7 +2113,7 @@ SineWave = (function(_super) {
       sp.position.x = i * spacing;
       sp.position.y = this.midY;
       this.sprites.push(sp);
-      this.stage.addChild(sp);
+      this.view.addChild(sp);
     }
     return null;
   };
@@ -2141,7 +2132,6 @@ Plankton = (function(_super) {
     this.update = __bind(this.update, this);
     var hex, hsb;
     Plankton.__super__.constructor.call(this, Math.random() * window.innerWidth, Math.random() * window.innerHeight, 0);
-    console.log('NEW Plankton : ' + this.position.x + ', ' + this.position.y);
     this.view = new PIXI.DisplayObjectContainer();
     this.graphics = new PIXI.Graphics();
     this.view.addChild(this.graphics);
@@ -2556,15 +2546,16 @@ Smoky = (function(_super) {
 
   Smoky.prototype.sprites = [];
 
-  function Smoky(renderer) {
+  function Smoky(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.mouseMove = __bind(this.mouseMove, this);
     this.update = __bind(this.update, this);
     this.resize = __bind(this.resize, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
     this.checkDistSq = this.checkDist * this.checkDist;
-    Smoky.__super__.constructor.call(this, this.renderer);
+    Smoky.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Smoky.prototype.load = function() {
@@ -2573,7 +2564,6 @@ Smoky = (function(_super) {
       this.windowHeight = window.innerHeight;
       this.areaWidth = this.windowWidth + 400;
       this.areaHeight = this.windowHeight + 400;
-      this.view.appendChild(this.renderer.view);
       Smoky.__super__.load.call(this);
       return;
     }
@@ -2581,9 +2571,6 @@ Smoky = (function(_super) {
     this.windowHeight = window.innerHeight;
     this.areaWidth = this.windowWidth + 400;
     this.areaHeight = this.windowHeight + 400;
-    this.stage = new PIXI.Stage(window.app.stageColor);
-    this.view = document.createElement('div');
-    this.view.appendChild(this.renderer.view);
     this.createNodes();
     this.createSprites();
     return Smoky.__super__.load.call(this);
@@ -2622,7 +2609,7 @@ Smoky = (function(_super) {
       sp.blendMode = PIXI.blendModes.SCREEN;
       sp.alpha = 0.1 + (Math.random() * 0.2);
       this.sprites.push(sp);
-      this.stage.addChild(sp);
+      this.view.addChild(sp);
     }
     return null;
   };
@@ -2684,7 +2671,6 @@ Smoky = (function(_super) {
     this.curX = window.app.pointerPosition.x;
     this.curY = window.app.pointerPosition.y;
     this.updateSprites();
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -2723,8 +2709,9 @@ Spirals = (function(_super) {
 
   Spirals.prototype.sqDist = 100;
 
-  function Spirals(renderer) {
+  function Spirals(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.createSprite = __bind(this.createSprite, this);
     this.createNode = __bind(this.createNode, this);
     this.distToMidpoint = __bind(this.distToMidpoint, this);
@@ -2734,24 +2721,13 @@ Spirals = (function(_super) {
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Spirals.__super__.constructor.call(this, this.renderer);
+    Spirals.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Spirals.prototype.load = function() {
     var _this = this;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
-      this.view.appendChild(this.renderer.view);
-      this.gui = new dat.GUI({
-        autoPlace: false
-      });
-      this.gui.domElement.style.zIndex = 100;
-      this.gui.domElement.style.position = 'absolute';
-      this.gui.domElement.style.top = 0;
-      this.gui.domElement.style.left = 0;
-      this.gui.domElement.style.height = 'auto';
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.gui.add(this, 'rotateSpeed', -50, 50).listen().onChange(function() {
         return _this.changeCount = _this.changeLimit;
       });
@@ -2765,7 +2741,6 @@ Spirals = (function(_super) {
       y: window.innerHeight * 0.5
     };
     this.sqDist = (window.innerWidth * 0.5) * (window.innerWidth * 0.5);
-    this.view.appendChild(this.renderer.view);
     this.randomisePattern();
     Spirals.__super__.load.call(this);
     return null;
@@ -2792,7 +2767,7 @@ Spirals = (function(_super) {
       this.newNodeCount = this.newNodeLimit;
       newNode = this.createNode();
       this.nodes.push(newNode);
-      this.stage.addChild(newNode.sprite);
+      this.view.addChild(newNode.sprite);
     }
     this.changeCount--;
     if (this.changeCount === 0) {
@@ -2800,7 +2775,6 @@ Spirals = (function(_super) {
       this.changeCount = this.changeLimit;
     }
     this.updateNodes();
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -2839,7 +2813,7 @@ Spirals = (function(_super) {
       node.phase %= 360;
       node.sprite.scale.x = node.sprite.scale.y = 0.25 + ((this.distToMidpoint(node) / this.sqDist) * 4);
       if ((newx - (16 * 5) + this.midPoint.x) > window.innerWidth) {
-        this.stage.removeChild(node.sprite);
+        this.view.removeChild(node.sprite);
         this.nodes.splice(i, 1);
         this.deadNodes.push(node);
       }
@@ -2888,28 +2862,25 @@ Spirals = (function(_super) {
 Spirograph = (function(_super) {
   __extends(Spirograph, _super);
 
-  function Spirograph(renderer) {
+  function Spirograph(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.addNode = __bind(this.addNode, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Spirograph.__super__.constructor.call(this, this.renderer);
+    Spirograph.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Spirograph.prototype.load = function() {
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.nodes = [];
       this.addNode();
       this.addNode();
       this.addNode();
     }
-    this.view.appendChild(this.renderer.view);
     Spirograph.__super__.load.call(this);
     return null;
   };
@@ -2930,7 +2901,6 @@ Spirograph = (function(_super) {
       node = _ref[_i];
       node.update();
     }
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -2944,7 +2914,7 @@ Spirograph = (function(_super) {
     this.nodes.push(node);
     node.color = Math.random() * 360;
     node.updateTint();
-    this.stage.addChild(node.view);
+    this.view.addChild(node.view);
     if (this.nodes.length === 1) {
       node.speed = 59.9;
       node.radSpeed = 122;
@@ -2976,8 +2946,9 @@ Spirograph = (function(_super) {
 Squids = (function(_super) {
   __extends(Squids, _super);
 
-  function Squids(renderer) {
+  function Squids(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
@@ -2985,16 +2956,13 @@ Squids = (function(_super) {
     this.random1 = __bind(this.random1, this);
     this.random0 = __bind(this.random0, this);
     this.load = __bind(this.load, this);
-    Squids.__super__.constructor.call(this, this.renderer);
+    Squids.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Squids.prototype.load = function() {
     var col, i, squid, _i;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
-      this.view = document.createElement('div');
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.squids = [];
       for (i = _i = 0; _i < 3; i = ++_i) {
         squid = new SquidNode(window.innerWidth * ((1 / 4) * (i + 1)), window.innerHeight * 0.5);
@@ -3003,14 +2971,13 @@ Squids = (function(_super) {
         col = Math.random() * 360;
         squid.setColor(col);
         squid.setTailColor(col);
-        this.stage.addChild(squid.view);
+        this.view.addChild(squid.view);
         this.squids.push(squid);
       }
       this.gui.add(this, 'random0');
       this.gui.add(this, 'random1');
       this.gui.add(this, 'random2');
     }
-    this.view.appendChild(this.renderer.view);
     Squids.__super__.load.call(this);
     return null;
   };
@@ -3064,7 +3031,6 @@ Squids = (function(_super) {
       squid = _ref[_i];
       squid.update();
     }
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -3093,25 +3059,22 @@ Stacks = (function(_super) {
 
   Stacks.prototype.deadNodes = [];
 
-  function Stacks(renderer) {
+  function Stacks(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.randomiseSpeeds = __bind(this.randomiseSpeeds, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Stacks.__super__.constructor.call(this, this.renderer);
+    Stacks.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   Stacks.prototype.load = function() {
     var _this = this;
     if (!this.loaded) {
-      this.stage = new PIXI.Stage(window.app.stageColor);
+      this.makeGui();
       this.createSprites();
-      this.view = document.createElement('div');
-      this.view.appendChild(this.renderer.view);
-      this.gui = this.makeGui();
-      this.view.appendChild(this.gui.domElement);
       this.gui.add(this, 'minSpeed', -40, 40).listen().onChange(function() {
         if (_this.maxSpeed < _this.minSpeed) {
           _this.minSpeed = _this.maxSpeed;
@@ -3125,7 +3088,6 @@ Stacks = (function(_super) {
         return _this.randomiseSpeeds();
       });
     }
-    this.view.appendChild(this.renderer.view);
     Stacks.__super__.load.call(this);
     return null;
   };
@@ -3141,7 +3103,6 @@ Stacks = (function(_super) {
       return;
     }
     this.updateNodes();
-    this.renderer.render(this.stage);
     return null;
   };
 
@@ -3213,7 +3174,7 @@ Stacks = (function(_super) {
     sp.position.x = x * (window.innerWidth / this.xCount);
     sp.position.y = y * (30 * this.tgtScale);
     sp.scale.x = sp.scale.y = this.tgtScale;
-    this.stage.addChild(sp);
+    this.view.addChild(sp);
     return sp;
   };
 
@@ -3253,12 +3214,13 @@ Trails = (function(_super) {
 
   Trails.prototype.wobbleAngle = 17;
 
-  function Trails(renderer) {
+  function Trails(renderer, name) {
     this.renderer = renderer;
+    this.name = name;
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
     this.load = __bind(this.load, this);
-    Trails.__super__.constructor.call(this, this.renderer);
+    Trails.__super__.constructor.call(this, this.renderer, this.name);
     this.toAdd = 0.00000000001;
     this.sinIncrement = MathUtils.twoPI / 18;
   }
@@ -3269,31 +3231,19 @@ Trails = (function(_super) {
     if (this.loaded) {
       this.gui.domElement.style.display = 'block';
       this.gui.close();
-      this.view.appendChild(this.renderer.view);
       Trails.__super__.load.call(this);
     } else {
       this.curX = this.mouseX = window.innerWidth * 0.5;
       this.curY = this.mouseY = window.innerHeight * 0.5;
-      this.stage = new PIXI.Stage(window.app.stageColor);
       for (i = _i = 0, _ref = this.trailLength - 1; _i <= _ref; i = _i += 1) {
         sp = new PIXI.Sprite(window.app.textures[0]);
         sp.alpha = 0;
         sp.pivot.x = 16;
         sp.pivot.y = 16;
-        this.stage.addChild(sp);
+        this.view.addChild(sp);
         this.sprites.push(sp);
       }
-      this.view = document.createElement('div');
-      this.view.appendChild(this.renderer.view);
-      this.gui = new dat.GUI({
-        autoPlace: false
-      });
-      this.gui.domElement.style.zIndex = 100;
-      this.gui.domElement.style.position = 'absolute';
-      this.gui.domElement.style.top = 0;
-      this.gui.domElement.style.left = 0;
-      this.gui.domElement.style.height = 'auto';
-      this.view.appendChild(this.gui.domElement);
+      this.makeGui();
       this.gui.add(this, 'sinIncrement', 0, MathUtils.twoPI / 5);
       this.gui.add(this, 'wobbleAngle', 0, 90);
       this.gui.add(this, 'maxScale', 0, 10).listen().onChange(function() {
@@ -3313,7 +3263,6 @@ Trails = (function(_super) {
   };
 
   Trails.prototype.unload = function() {
-    this.gui.domElement.style.display = 'none';
     Trails.__super__.unload.call(this);
     return null;
   };
@@ -3347,7 +3296,6 @@ Trails = (function(_super) {
       this.sprites[p].position.y = pos.y;
       this.sprites[p].alpha = p / this.trailLength;
     }
-    this.renderer.render(this.stage);
     dist = Math.sqrt((vecX * vecX) + (vecY * vecY));
     if (dist === 0) {
       dist = 1;
@@ -3504,174 +3452,205 @@ MenuButton = (function() {
 })();
 
 Menu = (function() {
-  Menu.prototype.buttons = [];
-
-  function Menu(app, data) {
+  function Menu(app, data, renderer) {
     this.app = app;
     this.data = data;
-    this.handleDivOut = __bind(this.handleDivOut, this);
-    this.handleDivOver = __bind(this.handleDivOver, this);
+    this.renderer = renderer;
+    this.checkAngleDistance = __bind(this.checkAngleDistance, this);
+    this.updateButtonTint = __bind(this.updateButtonTint, this);
+    this.update = __bind(this.update, this);
     this.disable = __bind(this.disable, this);
     this.enable = __bind(this.enable, this);
-    this.menuPanel = document.getElementById('menu-panel');
-    this.menuButtons = document.getElementById('menu-buttons');
-    this.currentButton = document.getElementById('current-sketch');
+    this.resize = __bind(this.resize, this);
+    this.hide = __bind(this.hide, this);
+    this.show = __bind(this.show, this);
+    this.view = new PIXI.DisplayObjectContainer();
+    this.bgAlpha = 0.9;
+    this.bg = new PIXI.Graphics();
+    this.view.addChild(this.bg);
+    this.resize();
+    this.tabBg = new PIXI.Graphics();
+    this.view.addChild(this.tabBg);
+    this.tabText = new PIXI.Text(this.data[this.app.currentSketch].classId, {
+      font: '300 15px Lato',
+      fill: '#e3e3e3'
+    });
+    this.tabText.anchor.y = 1;
+    this.tabBg.beginFill(0, this.bgAlpha);
+    this.tabBg.drawRect(0, 0, this.tabText.width, -this.tabText.height);
+    this.tabBg.endFill();
+    this.view.addChild(this.tabText);
+    this.tabText.setInteractive(true);
+    this.tabText.mouseup = this.show;
+    this.mouseDown = false;
+    this.isOpen = true;
+    this.buttons = [];
+    this.buttonSprites = [];
+    this.buttonSize = 20;
+    this.radius = (Math.min(window.innerWidth, window.innerHeight) * 0.5) - 50;
     this.createButtons();
-    $(this.currentButton).css('cursor', 'pointer');
-    this.currentButton.onclick = this.app.handleMenuClick;
-    this.buttons[this.app.currentSketch].select();
+    this.currentButton = this.buttons[this.app.currentSketch];
+    this.menuText = new PIXI.Text(this.currentButton.name, {
+      font: '300 27px Lato',
+      fill: '#e3e3e3'
+    });
+    this.menuText.anchor.x = 0.5;
+    this.menuText.anchor.y = 0.5;
+    this.menuText.position.x = Math.round(window.innerWidth * 0.5);
+    this.menuText.position.y = Math.round(window.innerHeight * 0.5);
+    this.view.addChild(this.menuText);
   }
 
   Menu.prototype.show = function() {
-    $(this.menuPanel).css('z-index', '1200');
-    TweenMax.to(this.menuPanel, 1, {
-      css: {
-        opacity: 1
-      },
+    console.log('OPEN SESAME', this.view);
+    TweenMax.killTweensOf(this.view.position);
+    TweenMax.to(this.view.position, 0.3, {
+      y: 0,
+      ease: Power4.easeOut
+    });
+    this.isOpen = true;
+    return null;
+  };
+
+  Menu.prototype.hide = function() {
+    this.isOpen = false;
+    TweenMax.killTweensOf(this.view.position);
+    TweenMax.to(this.view.position, 0.3, {
+      y: window.innerHeight,
       ease: Power4.easeOut
     });
     return null;
   };
 
-  Menu.prototype.hide = function() {
-    var _this = this;
-    TweenMax.to(this.menuPanel, 1, {
-      css: {
-        opacity: 0
-      },
-      ease: Power4.easeOut,
-      onComplete: function() {
-        return $(_this.menuPanel).css('z-index', '1');
-      }
-    });
+  Menu.prototype.resize = function() {
+    this.bg.clear();
+    this.bg.beginFill(0, this.bgAlpha);
+    this.bg.drawRect(0, 0, window.innerWidth, window.innerHeight);
+    this.bg.endFill();
     return null;
   };
 
   Menu.prototype.enable = function() {
-    var but, _i, _len, _ref;
-    _ref = this.buttons;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      but = _ref[_i];
-      but.enable();
-    }
     return null;
   };
 
   Menu.prototype.disable = function() {
-    var but, _i, _len, _ref;
-    _ref = this.buttons;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      but = _ref[_i];
-      but.disable();
-    }
     return null;
   };
 
-  Menu.prototype.updateInfoContent = function() {
-    var but, nextId, prevId, _i, _len, _ref,
-      _this = this;
-    prevId = this.app.currentSketch - 1;
-    if (prevId < 0) {
-      prevId = this.app.sketches.length - 1;
+  Menu.prototype.update = function() {
+    var but, curAngle, dist, i, minDist, xd, yd, _i, _j, _len, _ref, _ref1;
+    if (this.app.mousePressed && !this.mouseDown) {
+      this.mouseDown = true;
+    } else if (!this.app.mousePressed && this.mouseDown && this.isOpen) {
+      this.mouseDown = false;
+      this.app.selectSketch(this.currentButton.id);
+      this.hide();
+      return;
     }
-    nextId = this.app.currentSketch + 1;
-    if (nextId === this.app.sketches.length) {
-      nextId = 0;
+    if (this.view.position.y === window.innerHeight) {
+      return;
     }
-    TweenMax.to(this.currentButton, 0.5, {
-      css: {
-        opacity: 0
-      },
-      ease: Power4.easeOut,
-      onComplete: function() {
-        var i, _i, _ref, _results;
-        _this.currentButton.innerHTML = '<h1 style="opacity:0">' + _this.data[_this.app.currentSketch].classId + '</h1><div id="current-sketch-content">' + _this.getSketchCopy() + '</div>';
-        _this.currentHeader = _this.currentButton.getElementsByTagName('h1')[0];
-        _this.currentHolder = document.getElementById('current-sketch-content');
-        _this.paras = _this.currentHolder.getElementsByTagName('p');
-        $(_this.currentButton).css('opacity', '1');
-        TweenMax.to(_this.currentHeader, 0.5, {
-          css: {
-            opacity: 1
-          },
+    yd = (window.innerHeight * 0.5) - this.app.pointerPosition.y;
+    xd = (window.innerWidth * 0.5) - this.app.pointerPosition.x;
+    curAngle = MathUtils.radToDeg(Math.atan2(yd, xd));
+    curAngle += 180;
+    minDist = 180;
+    for (i = _i = 0, _ref = this.buttons.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      this.buttonSprites[i].position.x = (window.innerWidth * 0.5) + this.buttons[i].position.x;
+      this.buttonSprites[i].position.y = (window.innerHeight * 0.5) + this.buttons[i].position.y;
+      dist = this.checkAngleDistance(curAngle, this.buttons[i].angle);
+      if (dist < minDist) {
+        minDist = dist;
+        this.currentButton = this.buttons[i];
+      }
+    }
+    _ref1 = this.buttons;
+    for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
+      but = _ref1[_j];
+      if (but === this.currentButton && !but.active) {
+        but.active = true;
+        TweenMax.killTweensOf(this.buttonSprites[but.id].scale);
+        TweenMax.killTweensOf(but);
+        TweenMax.to(this.buttonSprites[but.id].scale, 1.2, {
+          x: 2,
+          y: 2,
+          ease: Elastic.easeOut
+        });
+        TweenMax.to(but, 0.3, {
+          s: 100,
+          onUpdate: this.updateButtonTint,
+          onUpdateParams: [but],
           ease: Power4.easeOut
         });
-        _results = [];
-        for (i = _i = 0, _ref = _this.paras.length - 1; _i <= _ref; i = _i += 1) {
-          if (i < _this.paras.length - 1) {
-            _results.push(TweenMax.to(_this.paras[i], 0.5, {
-              css: {
-                opacity: 1
-              },
-              ease: Power4.easeOut,
-              delay: 0.3 + (i * 0.2)
-            }));
-          } else {
-            _results.push(TweenMax.to(_this.paras[i], 0.5, {
-              css: {
-                opacity: 1
-              },
-              ease: Power4.easeOut,
-              delay: 0.3 + (i * 0.2),
-              onComplete: function() {
-                return console.log('ALL TWEENING DONE');
-              }
-            }));
-          }
-        }
-        return _results;
-      }
-    });
-    _ref = this.buttons;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      but = _ref[_i];
-      if (but.id !== this.app.currentSketch && but.isActive) {
-        but.deselect();
-      } else if (but.id === this.app.currentSketch && !but.isActive) {
-        but.select();
+        this.menuText.setText(but.name);
+        this.tabText.setText(but.name);
+        this.tabBg.beginFill(0, this.bgAlpha);
+        this.tabBg.drawRect(0, 0, this.tabText.width, -this.tabText.height);
+        this.tabBg.endFill();
+      } else if (but.active && but !== this.currentButton) {
+        but.active = false;
+        TweenMax.killTweensOf(this.buttonSprites[but.id].scale);
+        TweenMax.killTweensOf(but);
+        TweenMax.to(this.buttonSprites[but.id].scale, 1.2, {
+          x: 1,
+          y: 1,
+          ease: Elastic.easeOut
+        });
+        TweenMax.to(but, 1.2, {
+          s: 0,
+          onUpdate: this.updateButtonTint,
+          onUpdateParams: [but],
+          ease: Power4.easeOut
+        });
       }
     }
     return null;
   };
 
-  Menu.prototype.getSketchCopy = function() {
-    var str;
-    str = "<p class='information-panel-copy' style='opacity:0'>" + this.data[this.app.currentSketch].instructions + "</p>";
-    str += "<p class='information-panel-copy' style='opacity:0'>" + this.data[this.app.currentSketch].description + "</p>";
-    return str;
-  };
-
-  Menu.prototype.handleDivOver = function(e) {
-    if (e.target === this.nextButton || e.target === this.menuButtons || e.target === this.currentButton) {
-      TweenMax.to(e.target, 0.3, {
-        css: {
-          color: 'rgb(255, 0, 61)'
-        },
-        ease: Power4.easeOut
-      });
-    }
+  Menu.prototype.updateButtonTint = function(but) {
+    this.buttonSprites[but.id].tint = ColourConversion.hsbToHex([but.angle, but.s, but.b]);
     return null;
   };
 
-  Menu.prototype.handleDivOut = function(e) {
-    if (e.target === this.nextButton || e.target === this.menuButtons || e.target === this.currentButton) {
-      TweenMax.to(e.target, 2, {
-        css: {
-          color: '#dedede'
-        },
-        ease: Power4.easeOut
-      });
+  Menu.prototype.checkAngleDistance = function(current, target) {
+    var dif;
+    dif = Math.abs(current - target);
+    if (dif > 180) {
+      dif = 360 - dif;
     }
-    return null;
+    return dif;
   };
 
   Menu.prototype.createButtons = function() {
-    var but, i, _i, _ref;
-    for (i = _i = 0, _ref = this.data.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-      but = new MenuButton(this.data[i].classId, i);
+    var but, i, inc, x, y, _i, _ref;
+    inc = 360 / this.data.length;
+    for (i = _i = 0, _ref = this.data.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      x = Math.cos(MathUtils.degToRad(inc * i)) * this.radius;
+      y = Math.sin(MathUtils.degToRad(inc * i)) * this.radius;
+      but = new Node(x, y);
+      but.angle = inc * i;
+      but.id = i;
+      but.name = this.data[i].classId;
+      but.active = false;
+      but.s = 0;
+      but.b = 100;
       this.buttons.push(but);
-      this.menuButtons.appendChild(but.view);
+      this.createButtonSprite(x, y);
     }
+    return null;
+  };
+
+  Menu.prototype.createButtonSprite = function(x, y) {
+    var sp;
+    sp = new PIXI.Graphics();
+    sp.beginFill(0xe3e3e3);
+    sp.drawCircle(0, 0, this.buttonSize);
+    sp.endFill();
+    sp.position.x = x;
+    sp.position.y = y;
+    this.buttonSprites.push(sp);
+    this.view.addChild(sp);
     return null;
   };
 
@@ -3804,6 +3783,8 @@ App = (function() {
   App.prototype.radToDeg = 180 / Math.PI;
 
   function App() {
+    this.update = __bind(this.update, this);
+    this.removeGui = __bind(this.removeGui, this);
     this.selectSketch = __bind(this.selectSketch, this);
     this.prev = __bind(this.prev, this);
     this.next = __bind(this.next, this);
@@ -3817,48 +3798,43 @@ App = (function() {
       _this = this;
     this.data = new PWPData().data;
     this.renderer = PIXI.autoDetectRenderer(window.innerWidth, window.innerHeight);
+    this.stage = new PIXI.Stage(this.stageColor, true);
+    document.body.appendChild(this.renderer.view);
     this.textures = [PIXI.Texture.fromImage('img/node.png')];
     this.sketches = [];
     _ref = this.data;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       i = _ref[_i];
       this.sketches.push({
-        sketch: new i.className(this.renderer),
+        sketch: new i.className(this.renderer, i.classId),
         id: i.classId
       });
     }
     this.numSketches = this.sketches.length;
     this.currentSketch = this.sketches.length - 1;
-    this["interface"] = document.getElementById('interface');
-    this.infoButton = document.getElementById('info-button');
-    this.infoButton.onmouseover = this.handleInterfaceOver;
-    this.infoButton.onmouseout = this.handleInterfaceOut;
-    this.infoButton.onclick = this.handleInfoClick;
-    this.menuButton = document.getElementById('menu-button');
-    this.menuButton.onmouseover = this.handleInterfaceOver;
-    this.menuButton.onmouseout = this.handleInterfaceOut;
-    this.menuButton.onclick = this.handleMenuClick;
+    this.sketchHolder = new PIXI.DisplayObjectContainer();
     this.menuPanel = new Menu(this, this.data);
-    this.infoPanel = new InfoPanel();
+    this.stage.addChild(this.sketchHolder);
+    this.stage.addChild(this.menuPanel.view);
     this.pointerPosition = {
       x: window.innerWidth * 0.5,
       y: window.innerHeight * 0.5
     };
     this.mousePressed = false;
-    window.onmousemove = function(e) {
+    this.renderer.view.onmousemove = function(e) {
       _this.pointerPosition.x = e.pageX;
       _this.pointerPosition.y = e.pageY;
       return null;
     };
-    window.onmousedown = function() {
+    this.renderer.view.onmousedown = function() {
       _this.mousePressed = true;
       return null;
     };
-    window.onmouseup = function() {
+    this.renderer.view.onmouseup = function() {
       _this.mousePressed = false;
       return null;
     };
-    window.ontouch = function(e) {
+    this.renderer.view.ontouch = function(e) {
       _this.pointerPosition.x = e.touches[0].pageX;
       _this.pointerPosition.y = e.touches[0].pageY;
       return null;
@@ -3876,6 +3852,7 @@ App = (function() {
       return null;
     };
     this.init();
+    requestAnimationFrame(this.update);
   }
 
   App.prototype.init = function() {
@@ -3963,9 +3940,6 @@ App = (function() {
 
   App.prototype.next = function() {
     var lastSketch;
-    if (this.infoOpen) {
-      this.handleInfoClick();
-    }
     lastSketch = this.sketches[this.currentSketch];
     this.changeSketch('next');
     this.unloadSketch(lastSketch.sketch);
@@ -3975,9 +3949,6 @@ App = (function() {
 
   App.prototype.prev = function() {
     var lastSketch;
-    if (this.infoOpen) {
-      this.handleInfoClick();
-    }
     lastSketch = this.sketches[this.currentSketch];
     this.changeSketch('prev');
     this.unloadSketch(lastSketch.sketch);
@@ -3987,27 +3958,43 @@ App = (function() {
 
   App.prototype.selectSketch = function(id) {
     var lastSketch;
+    if (id === this.currentSketch) {
+      return;
+    }
     lastSketch = this.sketches[this.currentSketch];
     this.currentSketch = id;
     this.unloadSketch(lastSketch.sketch);
-    this.menuPanel.updateInfoContent();
     return null;
   };
 
   App.prototype.unloadSketch = function(sketch) {
-    var _this = this;
+    if (sketch.gui !== null) {
+      TweenMax.to(sketch.gui.domElement, 0.3, {
+        css: {
+          opacity: 0
+        },
+        ease: Power4.easeOut
+      });
+    }
     TweenMax.to(sketch.view, 1, {
-      css: {
-        opacity: 0
-      },
+      alpha: 0,
       ease: Power4.easeOut,
-      onComplete: function() {
-        sketch.unload();
-        return _this.loadCurrentSketch();
-      }
+      onComplete: this.removeGui,
+      onCompleteParams: [sketch]
     });
     return null;
   };
+
+  App.prototype.removeGui = function(sketch) {
+    sketch.unload();
+    this.sketchHolder.removeChild(sketch.view);
+    if (sketch.gui !== null) {
+      document.body.removeChild(sketch.gui.domElement);
+    }
+    return this.loadCurrentSketch();
+  };
+
+  null;
 
   App.prototype.changeSketch = function(dir) {
     if (dir === 'next') {
@@ -4025,14 +4012,34 @@ App = (function() {
 
   App.prototype.loadCurrentSketch = function() {
     this.sketches[this.currentSketch].sketch.load();
-    this.sketches[this.currentSketch].sketch.view.style.opacity = 0;
-    document.body.appendChild(this.sketches[this.currentSketch].sketch.view);
+    this.sketches[this.currentSketch].sketch.view.alpha = 0;
+    this.sketchHolder.addChild(this.sketches[this.currentSketch].sketch.view);
+    if (this.sketches[this.currentSketch].sketch.gui !== null) {
+      this.sketches[this.currentSketch].sketch.gui.domElement.style.opacity = 0;
+      document.body.appendChild(this.sketches[this.currentSketch].sketch.gui.domElement);
+      TweenMax.to(this.sketches[this.currentSketch].sketch.gui.domElement, 0.3, {
+        css: {
+          opacity: 1
+        },
+        ease: Power4.easeOut,
+        delay: 0.5
+      });
+    }
     TweenMax.to(this.sketches[this.currentSketch].sketch.view, 1, {
-      css: {
-        opacity: 1
-      },
+      alpha: 1,
       ease: Power4.easeOut
     });
+    console.log('LOADING SKETCH ' + this.sketches[this.currentSketch].sketch);
+    return null;
+  };
+
+  App.prototype.update = function() {
+    requestAnimationFrame(this.update);
+    this.menuPanel.update();
+    if (this.sketches[this.currentSketch].sketch.loaded) {
+      this.sketches[this.currentSketch].sketch.update();
+    }
+    this.renderer.render(this.stage);
     return null;
   };
 

@@ -7,22 +7,17 @@ class Fractals extends Sketch
 	sprites: []
 	deadSprites: []
 
-	constructor: (@renderer) ->
-		super(@renderer)
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage(window.app.stageColor)
-
-			@view = document.createElement 'div'
-
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
+			@makeGui()
 
 			@renderTex = new PIXI.RenderTexture(window.innerWidth, window.innerHeight)
 			@renderView = new PIXI.Sprite(@renderTex)
-			@stage.addChild @renderView
+			@view.addChild @renderView
 
 			@sprite = new PIXI.Sprite(window.app.textures[0])
 			@sprite.pivot.x = @sprite.pivot.y = 16
@@ -45,7 +40,7 @@ class Fractals extends Sketch
 
 		@createSprites()
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 		null
@@ -59,7 +54,7 @@ class Fractals extends Sketch
 		super()
 		if @cancelled then return
 
-		@renderer.render @stage
+
 		
 		null
 

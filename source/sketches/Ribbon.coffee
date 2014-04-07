@@ -1,15 +1,11 @@
 class Ribbon extends Sketch
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
 			@midx = window.innerWidth * 0.5
 			@midy = window.innerHeight * 0.5
 
@@ -51,10 +47,10 @@ class Ribbon extends Sketch
 			# 	sp.alpha = i * inc
 			# 	sp.position.x = @nodeA.position.x
 			# 	sp.position.y = @nodeA.position.y
-			# 	@stage.addChild sp
+			# 	@view.addChild sp
 			# 	@tailA.push sp
 
-			@stage.addChild @graphics
+			@view.addChild @graphics
 
 			# for i in [0..@trailLength-1]
 			# 	sp = new PIXI.Sprite window.app.textures[0]
@@ -63,7 +59,7 @@ class Ribbon extends Sketch
 			# 	sp.alpha = i * inc
 			# 	sp.position.x = @nodeB.position.x
 			# 	sp.position.y = @nodeB.position.y
-			# 	@stage.addChild sp
+			# 	@view.addChild sp
 			# 	@tailB.push sp
 
 
@@ -72,11 +68,9 @@ class Ribbon extends Sketch
 			# @baseSprite.position.x = @baseNode.position.x
 			# @baseSprite.position.y = @baseNode.position.y
 
-			# @stage.addChild @baseSprite
+			# @view.addChild @baseSprite
 
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
-
+			@makeGui()
 
 			@gui.add @, 'ribbonWidth', 1, 200
 			@gui.addColor @, 'tailColour'
@@ -88,7 +82,7 @@ class Ribbon extends Sketch
 			@gui.add @nodeB, 'inc', 0.1, 359.9
 
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 
@@ -128,7 +122,7 @@ class Ribbon extends Sketch
 
 		@drawRibbon()
 
-		@renderer.render @stage
+
 
 		null
 

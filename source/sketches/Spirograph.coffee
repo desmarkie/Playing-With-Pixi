@@ -3,18 +3,13 @@
 # import objects.SpirographNode
 class Spirograph extends Sketch
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
+			@makeGui()
 
 			@nodes = []
 
@@ -22,7 +17,7 @@ class Spirograph extends Sketch
 			@addNode()
 			@addNode()
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 
@@ -40,7 +35,7 @@ class Spirograph extends Sketch
 		for node in @nodes
 			node.update()
 
-		@renderer.render @stage
+
 
 		null
 
@@ -53,7 +48,7 @@ class Spirograph extends Sketch
 		@nodes.push node
 		node.color = Math.random()*360
 		node.updateTint()
-		@stage.addChild node.view
+		@view.addChild node.view
 
 		# node.randomise()
 

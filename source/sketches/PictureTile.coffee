@@ -2,16 +2,12 @@
 # import sketches.Sketch
 class PictureTile extends Sketch
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
 			@isConnected = false
 
 			@camWidth = 40
@@ -51,7 +47,7 @@ class PictureTile extends Sketch
 					p.position.x = sx + (i*@size)
 					p.position.y = sy + (j*@size)
 					p.scale.x = p.scale.y = (@size / 32)
-					@stage.addChild p
+					@view.addChild p
 					@sprites[i][j] = p
 
 
@@ -60,7 +56,7 @@ class PictureTile extends Sketch
 			navigator.getUserMedia {video:true}, @handleVideo, @handleVideoError
 
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 
@@ -93,7 +89,7 @@ class PictureTile extends Sketch
 			@canvas.getContext('2d').drawImage @video, 0, 0, @camWidth, @camHeight
 			@drawPixels()
 
-		@renderer.render @stage
+
 
 		null
 

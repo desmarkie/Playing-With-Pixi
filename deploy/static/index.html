@@ -14,40 +14,13 @@
 		<script type="text/javascript" src="js/app.js"></script>
 	</head>
 	<body>
-		<div id="interface">
-			<div id="info-button-holder" class="handCursor"><i id="info-button" class="icon-info-circled"></i></div>
-			<div id="menu-button-holder" class="handCursor"><i id="menu-button" class="icon-menu-outline"></i></div>
-		</div>
-		<div id="menu-panel">
-			<div id="menu-panel-bg"></div>
-			<div id="menu-buttons"></div>
-			<div id="line-a" class="white-line"></div>
-			<div id="current-sketch"></div>
-			<!-- <div id="line-b" class="white-line"></div> -->
-			<!-- <div id="next-sketch"></div> -->
-		</div>
-		<div id="information-panel">
-			<div id="information-panel-bg"></div>
-			<div id="line-a" class="white-line"></div>
-			<div id="information-panel-content">
-				<h1>Playing With Pixi</h1>
-				<div id="information-panel-content-holder">
-					<p class="information-panel-copy">Use Arrow Keys or Menu to browse</p>
-					<p class="information-panel-copy">A bunch of silly toys I've made while playing with Pixi.js (<a class="information-panel-link" href="http://www.pixijs.com">http://www.pixijs.com</a>)<br/>and one sprite, to keep it interesting<br/><img src="img/node.png"></p>
-					<p class="information-panel-copy">I was using Grunt and Coffeescript at work recently and it's made me want to make those fun things we used to make back in the flash days to help me learn how to use them better. In order to keep it quick and not over-involved I kept it to one sprite and tried to make each toy in one go.<br/><br/>For the most part the interaction is minimal, just move your mouse about. Play about with controls if they're available. The menu screen will let you know if there's any other buttons you can press on a specific toy.</p>
-					<p class="information-panel-copy">Project source:<br/><a class="information-panel-link" href="https://github.com/desmarkie/Playing-With-Pixi">Github repo</a><br/>Built using <a href="http://coffeescript.org/">Coffeescript</a> and <a href="http://gruntjs.com/">Grunt</a></p>
-					<p class="information-panel-copy"><a class="information-panel-link" href="http://cormedialtd.net">COR Media</a><br/><a class="information-panel-link" href="http://twitter.com/desmarkie">Desmarkie</a></p>
-				</div>
-			</div>
-			<!-- <div id="line-b" class="white-line"></div> -->
-		</div>
+		
 	</body>
 	
 	<script type="text/javascript">
 		document.body.onload = function(e){
 			app = new App();
 			app.loadCurrentSketch();
-			app.menuPanel.updateInfoContent();
 		}
 	</script>
 </html>

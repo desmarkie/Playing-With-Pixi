@@ -5,7 +5,6 @@ class Plankton extends Node
 
 	constructor: ->
 		super Math.random() * window.innerWidth, Math.random() * window.innerHeight, 0
-		console.log 'NEW Plankton : '+@position.x+', '+@position.y
 		@view = new PIXI.DisplayObjectContainer()
 
 		@graphics = new PIXI.Graphics()

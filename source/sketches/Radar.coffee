@@ -13,20 +13,15 @@ class Radar extends Sketch
 
 	sprites: []
 
-	constructor: (@renderer) ->
-		super(@renderer)
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 		@midX = window.innerWidth * 0.5
 		@midY = window.innerHeight * 0.5
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
+			@makeGui()
 
 			@gui.add(@, 'rotationSpeed', 0.1, 359.9)
 			@gui.add(@, 'radarWidth', 10, 1000)
@@ -49,13 +44,13 @@ class Radar extends Sketch
 
 			@holder.addChild @canvas
 
-			@stage.addChild @holder
+			@view.addChild @holder
 
 			@createSprites()
 
 
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 
@@ -86,7 +81,7 @@ class Radar extends Sketch
 		@renderTexture2.render @holder, new PIXI.Point(0, 0), false
 		@renderTexture2.render @dummy, new PIXI.Point(0, 0), false
 
-		@renderer.render @stage
+
 
 		null
 

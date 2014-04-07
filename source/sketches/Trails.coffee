@@ -17,8 +17,8 @@ class Trails extends Sketch
 
 	wobbleAngle: 17
 
-	constructor: (@renderer) ->
-		super(@renderer)
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 		@toAdd = 0.00000000001
 		@sinIncrement = MathUtils.twoPI / 18
 
@@ -26,32 +26,21 @@ class Trails extends Sketch
 		if @loaded
 			@gui.domElement.style.display = 'block'
 			@gui.close()
-			@view.appendChild @renderer.view
-			# window.onmousemove = @handleMouseMove
+			
 			super()
 		else
 			@curX = @mouseX = window.innerWidth * 0.5
 			@curY = @mouseY = window.innerHeight * 0.5
-			@stage = new PIXI.Stage(window.app.stageColor)
-
+			
 			for i in [0..@trailLength-1] by 1
 				sp = new PIXI.Sprite(window.app.textures[0])
 				sp.alpha = 0
 				sp.pivot.x = 16
 				sp.pivot.y = 16
-				@stage.addChild sp
+				@view.addChild sp
 				@sprites.push sp
-
-			@view = document.createElement('div')
-			@view.appendChild @renderer.view
-			# window.onmousemove = @handleMouseMove
-			@gui = new dat.GUI({autoPlace:false})
-			@gui.domElement.style.zIndex = 100
-			@gui.domElement.style.position = 'absolute'
-			@gui.domElement.style.top = 0
-			@gui.domElement.style.left = 0
-			@gui.domElement.style.height = 'auto'
-			@view.appendChild @gui.domElement
+			
+			@makeGui()
 			@gui.add(@, 'sinIncrement', 0, MathUtils.twoPI / 5)
 			@gui.add(@, 'wobbleAngle', 0, 90)
 			@gui.add(@, 'maxScale', 0, 10).listen().onChange(=>
@@ -66,8 +55,6 @@ class Trails extends Sketch
 		null
 
 	unload: =>
-		# window.onmousemove = null
-		@gui.domElement.style.display = 'none'
 		super()
 		null
 
@@ -97,7 +84,7 @@ class Trails extends Sketch
 			@sprites[p].position.y = pos.y
 			@sprites[p].alpha = p / @trailLength
 
-		@renderer.render @stage
+
 
 		dist = Math.sqrt((vecX*vecX) + (vecY*vecY))
 		if dist == 0 then dist = 1

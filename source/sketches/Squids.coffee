@@ -1,18 +1,13 @@
 
 class Squids extends Sketch
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
+			@makeGui()
 
 			@squids = []
 			for i in [0...3]
@@ -22,14 +17,14 @@ class Squids extends Sketch
 				col = Math.random()*360
 				squid.setColor col
 				squid.setTailColor col
-				@stage.addChild squid.view
+				@view.addChild squid.view
 				@squids.push squid
 
 			@gui.add @, 'random0'
 			@gui.add @, 'random1'
 			@gui.add @, 'random2'
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 
@@ -74,7 +69,7 @@ class Squids extends Sketch
 		for squid in @squids
 			squid.update()
 
-		@renderer.render @stage
+
 
 		null
 

@@ -33,47 +33,42 @@ class App
 		@data = new PWPData().data;
 
 		@renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
+		@stage = new PIXI.Stage @stageColor, true
+
+		document.body.appendChild @renderer.view
 
 		@textures = [PIXI.Texture.fromImage('img/node.png')]
 
 		@sketches = []
 		for i in @data
-			@sketches.push {sketch:new i.className(@renderer), id:i.classId}
+			@sketches.push {sketch:new i.className(@renderer, i.classId), id:i.classId}
 
 		@numSketches = @sketches.length
 		@currentSketch = @sketches.length - 1
 
-		@interface = document.getElementById('interface')
-
-		@infoButton = document.getElementById('info-button')
-		@infoButton.onmouseover = @handleInterfaceOver
-		@infoButton.onmouseout = @handleInterfaceOut
-		@infoButton.onclick = @handleInfoClick
-
-		@menuButton = document.getElementById('menu-button')
-		@menuButton.onmouseover = @handleInterfaceOver
-		@menuButton.onmouseout = @handleInterfaceOut
-		@menuButton.onclick = @handleMenuClick
+		@sketchHolder = new PIXI.DisplayObjectContainer()
 
 		@menuPanel = new Menu(this, @data)
-		@infoPanel = new InfoPanel()
+
+		@stage.addChild @sketchHolder
+		@stage.addChild @menuPanel.view
 
 		@pointerPosition = {x:window.innerWidth*0.5, y:window.innerHeight*0.5}
 		@mousePressed = false
-		window.onmousemove = (e) =>
+		@renderer.view.onmousemove = (e) =>
 			@pointerPosition.x = e.pageX
 			@pointerPosition.y = e.pageY
 			null
 
-		window.onmousedown = =>
+		@renderer.view.onmousedown = =>
 			@mousePressed = true
 			null
 
-		window.onmouseup = =>
+		@renderer.view.onmouseup = =>
 			@mousePressed = false
 			null
 
-		window.ontouch = (e) =>
+		@renderer.view.ontouch = (e) =>
 			@pointerPosition.x = e.touches[0].pageX
 			@pointerPosition.y = e.touches[0].pageY
 			null
@@ -88,6 +83,8 @@ class App
 			null
 
 		@init()
+
+		requestAnimationFrame @update
 
 	init: =>
 		
@@ -142,7 +139,6 @@ class App
 		null
 
 	next: =>
-		if @infoOpen then @handleInfoClick()
 		lastSketch = @sketches[@currentSketch]
 		@changeSketch('next')
 		@unloadSketch(lastSketch.sketch)
@@ -150,7 +146,6 @@ class App
 		null
 
 	prev: =>
-		if @infoOpen then @handleInfoClick()
 		lastSketch = @sketches[@currentSketch]
 		@changeSketch('prev')
 		@unloadSketch(lastSketch.sketch)
@@ -158,18 +153,26 @@ class App
 		null
 
 	selectSketch: (id) =>
+		return if id is @currentSketch
 		lastSketch = @sketches[@currentSketch]
 		@currentSketch = id
 		@unloadSketch(lastSketch.sketch)
-		@menuPanel.updateInfoContent()
 		null
 
 
 	unloadSketch: (sketch) ->
-		TweenMax.to sketch.view, 1, { css:{ opacity:0 }, ease:Power4.easeOut, onComplete: =>
+		if sketch.gui != null
+			TweenMax.to sketch.gui.domElement, 0.3, {css:{opacity:0}, ease:Power4.easeOut}
+		TweenMax.to sketch.view, 1, { alpha:0, ease:Power4.easeOut, onComplete:@removeGui, onCompleteParams:[sketch]}
+		null
+
+	removeGui: (sketch) =>
 			sketch.unload()
+			@sketchHolder.removeChild sketch.view
+			if sketch.gui != null
+				document.body.removeChild sketch.gui.domElement
+
 			@loadCurrentSketch()
-		}
 		null
 
 	changeSketch: (dir) ->
@@ -183,9 +186,26 @@ class App
 
 	loadCurrentSketch: ->
 		@sketches[@currentSketch].sketch.load()
-		@sketches[@currentSketch].sketch.view.style.opacity = 0
-		document.body.appendChild @sketches[@currentSketch].sketch.view
-		TweenMax.to @sketches[@currentSketch].sketch.view, 1, { css:{ opacity:1 }, ease:Power4.easeOut }
+		@sketches[@currentSketch].sketch.view.alpha = 0
+		@sketchHolder.addChild @sketches[@currentSketch].sketch.view
+		if @sketches[@currentSketch].sketch.gui != null
+			@sketches[@currentSketch].sketch.gui.domElement.style.opacity = 0
+			document.body.appendChild @sketches[@currentSketch].sketch.gui.domElement
+			TweenMax.to @sketches[@currentSketch].sketch.gui.domElement, 0.3, {css:{opacity:1}, ease:Power4.easeOut, delay:0.5}
+		TweenMax.to @sketches[@currentSketch].sketch.view, 1, { alpha:1, ease:Power4.easeOut }
+		console.log 'LOADING SKETCH '+@sketches[@currentSketch].sketch
+		null
+
+	update: =>
+		requestAnimationFrame @update
+
+		@menuPanel.update()
+
+		if @sketches[@currentSketch].sketch.loaded
+			@sketches[@currentSketch].sketch.update()
+
+		@renderer.render @stage
+
 		null
 
 	

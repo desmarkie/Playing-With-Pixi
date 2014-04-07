@@ -2,43 +2,55 @@
 # import utils.MathUtils
 class ShapeShifter extends Sketch
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
 			@holder = new PIXI.DisplayObjectContainer()
 			@holder.position.x = window.innerWidth * 0.5
 			@holder.position.y = window.innerHeight * 0.5
-			@stage.addChild @holder
+			@view.addChild @holder
 
-			@shapes = ['cube', 'cylinder', 'torus']
+			@shapes = ['cube', 'cylinder', 'torus', 'sphere', 'sphere2', 'cone']
 			@curShape = 0
 
 			@size = 10
 			@spacing = 32
 			@xOffset = 0
 			@yOffset = 0
-			@depthOn = true
+			@isometricScale = 1
+			@focalLength = 70
+			@cameraPosition = 1000
+			@depthOn = false
+			@perspectiveOn = true
 			@numNodes = @size * @size * @size
 
 			@nodes = @createNodes()
 			@sprites = @createSprites()
 			@placeSprites()
 
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
-			@gui.add @, 'depthOn'
+			@makeGui()
+			
+			@gui.add(@, 'depthOn').listen().onFinishChange(=>
+				if @depthOn and @perspectiveOn
+					@perspectiveOn = false
+			).name('Isometric')
+			f = @gui.addFolder 'Isometric Controls'
+			f.add(@, 'isometricScale', 1, 3).name('Zoom')
+			@gui.add(@, 'perspectiveOn').listen().onFinishChange(=>
+				if @depthOn and @perspectiveOn
+					@depthOn = false
+			).name('Perspective')
+			f = @gui.addFolder 'Perspective Controls'
+			f.add(@, 'focalLength', 1, 300).name('Focal Length')
+			f.add(@, 'cameraPosition', 0, 2000).name('Z position')
 
 		for key,node of @nodes
 			node.position.x = node.position.y = node.position.z = 0
 
-		@view.appendChild @renderer.view
+		
 
 		# @placeNodes()
 		TweenMax.to @, 0.75, {onComplete:@placeNodes}
@@ -70,7 +82,7 @@ class ShapeShifter extends Sketch
 
 		@placeSprites()
 
-		@renderer.render @stage
+
 
 		null
 
@@ -112,7 +124,6 @@ class ShapeShifter extends Sketch
 					else if @shapes[@curShape] is 'cylinder'
 						ct = (@size*x)+y
 						angle = MathUtils.degToRad(ct * incInc)
-						# angle = MathUtils.degToRad(z * inc) + MathUtils.degToRad(x * inc)
 						radius = halfSpace * (z / @size)
 						_x = Math.cos(angle) * radius
 						_y = (y*@spacing)-halfSpace
@@ -120,13 +131,36 @@ class ShapeShifter extends Sketch
 					else if @shapes[@curShape] is 'torus'
 						ct = (@size*x)+y
 						outerAngle = MathUtils.degToRad(ct * incInc)
-						if x is @size-1 then console.log MathUtils.radToDeg(outerAngle)
 						tubeAngle = MathUtils.degToRad(z * inc)
 						outerRadius = 128
 						tubeRadius = 64
 						_x = (outerRadius + (tubeRadius * Math.cos(tubeAngle))) * Math.cos(outerAngle)
 						_z = (outerRadius + (tubeRadius * Math.cos(tubeAngle))) * Math.sin(outerAngle)
 						_y = Math.sin(tubeAngle) * tubeRadius
+					else if @shapes[@curShape] is 'sphere'
+						ct = (@size*x)+y
+						angle = MathUtils.degToRad(ct * incInc)
+						angle2 = MathUtils.degToRad(z * inc) * 0.5
+						radius = 128
+						_z = radius * Math.cos(angle) * Math.sin(angle2)
+						_y = radius * Math.sin(angle) * Math.sin(angle2)
+						_x = radius * Math.cos(angle2)
+					else if @shapes[@curShape] is 'sphere2'
+						angle = MathUtils.degToRad(y * inc)
+						angle2 = MathUtils.degToRad(z * inc) * 0.5
+						radius = (128 / @size) * x
+						_x = radius * Math.cos(angle) * Math.sin(angle2)
+						_z = radius * Math.sin(angle) * Math.sin(angle2)
+						_y = radius * Math.cos(angle2)
+					else if @shapes[@curShape] is 'cone'
+						ct = (@size*x)+z
+						angle = MathUtils.degToRad(ct * incInc)
+						height = 128
+						curHeight = (y / @size) * height
+						radius = halfSpace
+						_x = (radius * Math.cos(angle)) * ((height - curHeight) / height)
+						_y = -(curHeight-(height*0.5))
+						_z = (radius * Math.sin(angle)) * ((height - curHeight) / height)
 
 
 					TweenMax.killTweensOf node.position
@@ -156,12 +190,28 @@ class ShapeShifter extends Sketch
 					sp = @sprites[i]
 					node = @nodes[x+'_'+y+'_'+z]
 
-					scalar = if @depthOn then (node.position.z / (@spacing*@size)) else 0
+					scalar = 0
+					if @depthOn
+						scalar = (node.position.z / (@spacing*@size))
+						sp.scale.x = sp.scale.y = (1 + Math.exp(min + scalar)) * @isometricScale
+						sp.position.x = ((node.position.x * sp.scale.x) + (scalar * @xOffset))# * @isometricScale
+						sp.position.y = ((node.position.y * sp.scale.y) + (scalar * @yOffset))# * @isometricScale
+					else if @perspectiveOn
+						div = (@focalLength + (node.position.z-@cameraPosition))
+						if div != 0
+							scalar = @focalLength / div
+						else
+							scalar = 0
+						sp.scale.x = sp.scale.y = 10 * scalar
+						sp.position.x = (node.position.x - @xOffset) * (scalar * 10)
+						sp.position.y = -(node.position.y - @yOffset) * (scalar * 10)
+					else
+						sp.scale.x = sp.scale.y = 1
+						sp.position.x = node.position.x
+						sp.position.y = node.position.y
 
-					sp.scale.x = sp.scale.y = 1 + Math.exp(min + scalar)
-					# sp.scale.x = sp.scale.y = 1 + scalar
-					sp.position.x = (node.position.x * sp.scale.x) + (scalar * @xOffset)
-					sp.position.y = (node.position.y * sp.scale.y) + (scalar * @yOffset)
+					
+					
 					sp.alpha = 0.4
 					i++
 		null

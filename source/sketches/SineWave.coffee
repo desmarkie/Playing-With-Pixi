@@ -19,26 +19,15 @@ class SineWave extends Sketch
 
 	sprites: []
 
-	constructor: (@renderer) ->
-		super(@renderer)
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 		@midY = window.innerHeight * 0.5
 		@midX = window.innerWidth * 0.5
 		if not @loaded
-			@stage = new PIXI.Stage(window.app.stageColor)
 			@createSprites()
-
-			@view = document.createElement('div')
-			@view.appendChild @renderer.view
-
-			@gui = new dat.GUI({autoPlace:false})
-			@gui.domElement.style.zIndex = 100
-			@gui.domElement.style.position = 'absolute'
-			@gui.domElement.style.top = 0
-			@gui.domElement.style.left = 0
-			@gui.domElement.style.height = 'auto'
-			@view.appendChild @gui.domElement
+			@makeGui()
 
 			@gui.add @, 'waveLength', 10, 1000
 			@gui.add @, 'amplitude', 10, 500
@@ -48,7 +37,7 @@ class SineWave extends Sketch
 
 			@gui.close()
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 		null
@@ -88,7 +77,7 @@ class SineWave extends Sketch
 		@rotateAngle += @rotateSpeed
 		@rotateAngle %= 360
 
-		@renderer.render @stage
+
 		null
 
 	createSprites: =>
@@ -99,6 +88,6 @@ class SineWave extends Sketch
 			sp.position.x = i * spacing
 			sp.position.y = @midY
 			@sprites.push sp
-			@stage.addChild sp
+			@view.addChild sp
 
 		null

@@ -10,22 +10,15 @@ class Stacks extends Sketch
 	nodes: []
 	deadNodes: []
 
-	constructor: (@renderer) ->
-		super(@renderer)
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 		if not @loaded
-			@stage = new PIXI.Stage(window.app.stageColor)
+			@makeGui()
+
 			@createSprites()
 
-			@view = document.createElement('div')
-			@view.appendChild @renderer.view
-
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
-
-			# @gui.add @, 'minSpeed', -40, 40
-			# @gui.add @, 'maxSpeed', -40, 40
 			@gui.add(@, 'minSpeed', -40, 40).listen().onChange(=>
 				if @maxSpeed < @minSpeed then @minSpeed = @maxSpeed
 				@randomiseSpeeds()
@@ -36,7 +29,7 @@ class Stacks extends Sketch
 			)
 
 
-		@view.appendChild @renderer.view
+		
 
 		super()
 		null
@@ -52,7 +45,7 @@ class Stacks extends Sketch
 
 		@updateNodes()
 
-		@renderer.render @stage
+
 
 		null
 
@@ -113,7 +106,7 @@ class Stacks extends Sketch
 		sp.position.x = x * (window.innerWidth / @xCount)#(32 * @tgtScale)
 		sp.position.y = y * (30 * @tgtScale)
 		sp.scale.x = sp.scale.y = @tgtScale
-		@stage.addChild(sp)
+		@view.addChild(sp)
 		return sp
 
 	randomiseSpeeds: =>

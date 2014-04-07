@@ -21,23 +21,12 @@ class Spirals extends Sketch
 	sqDist: 100
 
 
-	constructor: (@renderer) ->
-		super(@renderer)
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 		if not @loaded
-			@stage = new PIXI.Stage(window.app.stageColor)
-
-			@view = document.createElement('div')
-			@view.appendChild @renderer.view
-
-			@gui = new dat.GUI({autoPlace:false})
-			@gui.domElement.style.zIndex = 100
-			@gui.domElement.style.position = 'absolute'
-			@gui.domElement.style.top = 0
-			@gui.domElement.style.left = 0
-			@gui.domElement.style.height = 'auto'
-			@view.appendChild @gui.domElement
+			@makeGui()
 			@gui.add(@, 'rotateSpeed', -50, 50).listen().onChange(=>
 				@changeCount = @changeLimit
 			)
@@ -50,7 +39,7 @@ class Spirals extends Sketch
 
 		@sqDist = (window.innerWidth*0.5)*(window.innerWidth*0.5)
 
-		@view.appendChild @renderer.view
+		
 
 		@randomisePattern()
 
@@ -76,7 +65,7 @@ class Spirals extends Sketch
 			@newNodeCount = @newNodeLimit
 			newNode = @createNode()
 			@nodes.push newNode
-			@stage.addChild newNode.sprite
+			@view.addChild newNode.sprite
 
 		@changeCount--
 		if @changeCount == 0
@@ -85,7 +74,7 @@ class Spirals extends Sketch
 
 		@updateNodes()
 
-		@renderer.render @stage
+
 		null
 
 	resize: =>
@@ -114,7 +103,7 @@ class Spirals extends Sketch
 			node.phase %= 360
 			node.sprite.scale.x = node.sprite.scale.y = 0.25 + ((@distToMidpoint(node)/@sqDist)*4)
 			if (newx - (16*5) + @midPoint.x) > window.innerWidth
-				@stage.removeChild node.sprite
+				@view.removeChild node.sprite
 				@nodes.splice i, 1
 				@deadNodes.push node
 		null

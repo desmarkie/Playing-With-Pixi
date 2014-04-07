@@ -6,18 +6,14 @@ class Comets extends Sketch
 	particles: []
 	pool: []
 
-	constructor: (@renderer) ->
-		super @renderer
+	constructor: (@renderer, @name) ->
+		super @renderer, @name
 
 	load: =>
 
 		if not @loaded
-			@stage = new PIXI.Stage window.app.stageColor
-
-			@view = document.createElement 'div'
-
-			@gui = @makeGui()
-			@view.appendChild @gui.domElement
+			@makeGui()
+			# @view.appendChild @gui.domElement
 
 			@maxComets = 40
 
@@ -51,9 +47,9 @@ class Comets extends Sketch
 
 
 			@graphics = new PIXI.Graphics()
-			@stage.addChild @graphics
+			@view.addChild @graphics
 
-		@view.appendChild @renderer.view
+		
 
 		@timeout = 1
 
@@ -89,11 +85,9 @@ class Comets extends Sketch
 			if comet.life is 0 or comet.position.x > window.innerWidth
 				@particles.splice i, 1
 				@pool.push comet
-				@stage.removeChild comet.view
+				@view.removeChild comet.view
 
 		@drawPaths()
-
-		@renderer.render @stage
 
 		null
 
@@ -125,7 +119,7 @@ class Comets extends Sketch
 	fireComet: =>
 		comet = @newComet()
 		@particles.push comet
-		@stage.addChild comet.view
+		@view.addChild comet.view
 		null
 
 	setCometColors: =>

@@ -1,32 +1,26 @@
 class Sketch
 
-	view: null
-	cancelled: false
-	loaded: false
-	renderer: null
-	stage: null
-
-	constructor: (@renderer) ->
+	constructor: (@renderer, @name) ->
+		@view = new PIXI.DisplayObjectContainer()
+		@cancelled = false
+		@loaded = false
+		@stage = null
+		@gui = null
 
 	load: ->
 		# override me
 		@cancelled = false
-		if !@loaded then requestAnimationFrame @update
+		# requestAnimationFrame @update
 		@loaded = true
-		@stage.visible = true
 		null
 
 	unload: ->
 		@cancelled = true
-		@stage.visible = false
 		null
 
 	update: ->
-		requestAnimationFrame @update
-
 		if @cancelled 
 			return
-		
 		null
 
 	resize: ->
@@ -34,10 +28,10 @@ class Sketch
 		null
 
 	makeGui: ->
-		gui = new dat.GUI({autoPlace:false})
-		gui.domElement.style.zIndex = 100
-		gui.domElement.style.position = 'absolute'
-		gui.domElement.style.top = 0
-		gui.domElement.style.left = 0
-		gui.domElement.style.height = 'auto'
-		return gui
+		@gui = new dat.GUI({autoPlace:false})
+		@gui.domElement.style.zIndex = 100
+		@gui.domElement.style.position = 'absolute'
+		@gui.domElement.style.top = 0
+		@gui.domElement.style.left = 0
+		@gui.domElement.style.height = 'auto'
+		null

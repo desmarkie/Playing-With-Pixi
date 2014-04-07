@@ -12,9 +12,9 @@ class Smoky extends Sketch
 	nodes: []
 	sprites: []
 
-	constructor: (@renderer) ->
+	constructor: (@renderer, @name) ->
 		@checkDistSq = @checkDist * @checkDist
-		super(@renderer)
+		super @renderer, @name
 
 	load: =>
 		if @loaded 
@@ -25,7 +25,7 @@ class Smoky extends Sketch
 			@areaWidth = @windowWidth + 400
 			@areaHeight = @windowHeight + 400
 
-			@view.appendChild @renderer.view
+			
 			super()
 			return
 
@@ -35,21 +35,13 @@ class Smoky extends Sketch
 		@areaWidth = @windowWidth + 400
 		@areaHeight = @windowHeight + 400
 
-		@stage = new PIXI.Stage(window.app.stageColor)
-
-		@view = document.createElement('div')
-		@view.appendChild @renderer.view
-
 		@createNodes()
 
 		@createSprites()
 
-		# window.onmousemove = @mouseMove
-
 		super()
 
 	unload: =>
-		# window.onmousemove = null
 		super()
 		null
 
@@ -76,7 +68,7 @@ class Smoky extends Sketch
 			sp.blendMode = PIXI.blendModes.SCREEN
 			sp.alpha = 0.1 + (Math.random() * 0.2)
 			@sprites.push sp
-			@stage.addChild sp
+			@view.addChild sp
 		null
 
 	updateSprites: ->
@@ -117,7 +109,7 @@ class Smoky extends Sketch
 		@curX = window.app.pointerPosition.x
 		@curY = window.app.pointerPosition.y
 		@updateSprites()
-		@renderer.render @stage
+
 		null
 
 	mouseMove: (e) =>

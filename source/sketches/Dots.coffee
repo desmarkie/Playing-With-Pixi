@@ -41,7 +41,7 @@ class Dots extends Sketch
 	lastY: 'follow'
 
 	constructor: (@renderer)->
-		super(@renderer)
+		super @renderer, @name
 
 	updateGui: =>
 		for c in @gui.__controllers
@@ -50,19 +50,8 @@ class Dots extends Sketch
 
 	load: =>
 		if not @loaded
-			@stage = new PIXI.Stage(window.app.stageColor)
 			@createSprites()
-
-			@view = document.createElement('div')
-			@view.appendChild @renderer.view
-
-			@gui = new dat.GUI({autoPlace:false})
-			@gui.domElement.style.zIndex = 100
-			@gui.domElement.style.position = 'absolute'
-			@gui.domElement.style.top = 0
-			@gui.domElement.style.left = 0
-			@gui.domElement.style.height = 'auto'
-			@view.appendChild @gui.domElement
+			@makeGui()
 
 			@gui.add(@, 'spriteSize', 16, 128, 8).onFinishChange((val)=>
 				@spriteSize = val
@@ -188,7 +177,7 @@ class Dots extends Sketch
 			@gui.close()
 
 		super()
-		@view.appendChild @renderer.view
+		
 
 		@xLimit = @dots.length
 		@yLimit = @dots[0].length
@@ -271,14 +260,14 @@ class Dots extends Sketch
 		@curX = Math.floor(@easeX/@spriteSize)
 		@curY = Math.floor(@easeY/@spriteSize)
 
-		@renderer.render @stage
+
 		null
 
 	resize: =>
 		if @loaded
 			for i in [@dots.length-1..0] by -1
 				for j in [@dots[i].length-1..0] by -1
-					@stage.removeChild @dots[i][j]
+					@view.removeChild @dots[i][j]
 					@dots[i].splice j, 1
 
 			@dots = []
@@ -330,6 +319,6 @@ class Dots extends Sketch
 				sp.position.y = j * @spriteSize
 				@dots[i][j] = sp
 				sp.alpha = 0
-				@stage.addChild sp
+				@view.addChild sp
 
 		null
