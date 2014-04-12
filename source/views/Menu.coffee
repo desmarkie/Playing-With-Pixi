@@ -11,17 +11,7 @@ class Menu
 		@bg = new PIXI.Graphics()
 		@view.addChild @bg
 		@resize()
-		@tabBg = new PIXI.Graphics()
-		@view.addChild @tabBg
-		@tabText = new PIXI.Text(@data[@app.currentSketch].classId, {font:'300 15px Lato', fill:'#e3e3e3'})
-		@tabText.anchor.y = 1
-		@tabBg.beginFill 0, @bgAlpha
-		@tabBg.drawRect(0, 0, @tabText.width, -@tabText.height)
-		@tabBg.endFill()
-		@view.addChild @tabText
 
-		@tabText.setInteractive true
-		@tabText.mouseup = @show
 
 		@mouseDown = false
 		@isOpen = true
@@ -44,7 +34,7 @@ class Menu
 		@view.addChild @menuText
 
 	show: =>
-		console.log 'OPEN SESAME', @view
+		# console.log 'SHOW ME THE MONEY'
 		TweenMax.killTweensOf @view.position
 		TweenMax.to @view.position, 0.3, {y:0, ease:Power4.easeOut}
 		@isOpen = true
@@ -73,21 +63,13 @@ class Menu
 
 
 	update: =>
-		if @app.mousePressed and !@mouseDown
-			@mouseDown = true
-		else if !@app.mousePressed and @mouseDown and @isOpen
-			@mouseDown = false
-			@app.selectSketch @currentButton.id
-			@hide()
-			return
-
 		if @view.position.y is window.innerHeight then return
 
 		yd = (window.innerHeight*0.5) - @app.pointerPosition.y
 		xd = (window.innerWidth*0.5) - @app.pointerPosition.x
+
 		curAngle = MathUtils.radToDeg Math.atan2(yd, xd)
 		curAngle += 180
-		# console.log 'curAngle', curAngle
 		minDist = 180
 		for i in [0...@buttons.length]
 			@buttonSprites[i].position.x = (window.innerWidth * 0.5) + @buttons[i].position.x
@@ -105,10 +87,6 @@ class Menu
 				TweenMax.to @buttonSprites[but.id].scale, 1.2, {x:2, y:2, ease:Elastic.easeOut}
 				TweenMax.to but, 0.3, {s:100, onUpdate:@updateButtonTint, onUpdateParams:[but], ease:Power4.easeOut}
 				@menuText.setText but.name
-				@tabText.setText but.name
-				@tabBg.beginFill 0, @bgAlpha
-				@tabBg.drawRect(0, 0, @tabText.width, -@tabText.height)
-				@tabBg.endFill()
 			else if but.active and but != @currentButton
 				but.active = false
 				TweenMax.killTweensOf @buttonSprites[but.id].scale

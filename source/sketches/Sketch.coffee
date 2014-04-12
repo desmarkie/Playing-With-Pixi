@@ -34,4 +34,5 @@ class Sketch
 		@gui.domElement.style.top = 0
 		@gui.domElement.style.left = 0
 		@gui.domElement.style.height = 'auto'
+		@gui.close()
 		null
