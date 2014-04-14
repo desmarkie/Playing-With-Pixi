@@ -1,4 +1,3 @@
-# import views.MenuButton
 # import objects.Node
 # import utils.MathUtils
 class Menu
@@ -12,8 +11,6 @@ class Menu
 		@view.addChild @bg
 		@resize()
 
-
-		@mouseDown = false
 		@isOpen = true
 
 		@buttons = []
@@ -23,6 +20,11 @@ class Menu
 		@radius = (Math.min(window.innerWidth, window.innerHeight) * 0.5) - 50
 
 		@createButtons()
+		xd = @buttons[1].position.x - @buttons[0].position.x
+		yd = @buttons[1].position.y - @buttons[0].position.y
+		dist = Math.sqrt((xd*xd)+(yd*yd))
+		@overScale = (dist*0.5) / @buttonSize
+		# console.log @overScale+' SET', xd, yd
 
 		@currentButton = @buttons[@app.currentSketch]
 
@@ -82,17 +84,24 @@ class Menu
 		for but in @buttons
 			if but is @currentButton and !but.active
 				but.active = true
+				@view.addChild @buttonSprites[but.id]
 				TweenMax.killTweensOf @buttonSprites[but.id].scale
 				TweenMax.killTweensOf but
-				TweenMax.to @buttonSprites[but.id].scale, 1.2, {x:2, y:2, ease:Elastic.easeOut}
+				TweenMax.killTweensOf @menuText
+				TweenMax.to @buttonSprites[but.id].scale, 1.2, {x:@overScale, y:@overScale, ease:Elastic.easeOut}
 				TweenMax.to but, 0.3, {s:100, onUpdate:@updateButtonTint, onUpdateParams:[but], ease:Power4.easeOut}
-				@menuText.setText but.name
+				TweenMax.to @menuText, 0.15, {alpha:0, ease:Power4.easeOut, onComplete:@updateMenuText}
 			else if but.active and but != @currentButton
 				but.active = false
 				TweenMax.killTweensOf @buttonSprites[but.id].scale
 				TweenMax.killTweensOf but
 				TweenMax.to @buttonSprites[but.id].scale, 1.2, {x:1, y:1, ease:Elastic.easeOut}
 				TweenMax.to but, 1.2, {s:0, onUpdate:@updateButtonTint, onUpdateParams:[but], ease:Power4.easeOut}
+		null
+
+	updateMenuText: =>
+		@menuText.setText @currentButton.name
+		TweenMax.to @menuText, 0.15, {alpha:1, ease:Power4.easeOut}
 		null
 
 	updateButtonTint: (but) =>

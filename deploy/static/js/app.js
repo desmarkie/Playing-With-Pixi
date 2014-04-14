@@ -3373,6 +3373,207 @@ InfoPanel = (function() {
 
 })();
 
+Menu = (function() {
+  function Menu(app, data, renderer) {
+    var dist, xd, yd;
+    this.app = app;
+    this.data = data;
+    this.renderer = renderer;
+    this.checkAngleDistance = __bind(this.checkAngleDistance, this);
+    this.updateButtonTint = __bind(this.updateButtonTint, this);
+    this.updateMenuText = __bind(this.updateMenuText, this);
+    this.update = __bind(this.update, this);
+    this.disable = __bind(this.disable, this);
+    this.enable = __bind(this.enable, this);
+    this.resize = __bind(this.resize, this);
+    this.hide = __bind(this.hide, this);
+    this.show = __bind(this.show, this);
+    this.view = new PIXI.DisplayObjectContainer();
+    this.bgAlpha = 0.9;
+    this.bg = new PIXI.Graphics();
+    this.view.addChild(this.bg);
+    this.resize();
+    this.isOpen = true;
+    this.buttons = [];
+    this.buttonSprites = [];
+    this.buttonSize = 20;
+    this.radius = (Math.min(window.innerWidth, window.innerHeight) * 0.5) - 50;
+    this.createButtons();
+    xd = this.buttons[1].position.x - this.buttons[0].position.x;
+    yd = this.buttons[1].position.y - this.buttons[0].position.y;
+    dist = Math.sqrt((xd * xd) + (yd * yd));
+    this.overScale = (dist * 0.5) / this.buttonSize;
+    this.currentButton = this.buttons[this.app.currentSketch];
+    this.menuText = new PIXI.Text(this.currentButton.name, {
+      font: '300 27px Lato',
+      fill: '#e3e3e3'
+    });
+    this.menuText.anchor.x = 0.5;
+    this.menuText.anchor.y = 0.5;
+    this.menuText.position.x = Math.round(window.innerWidth * 0.5);
+    this.menuText.position.y = Math.round(window.innerHeight * 0.5);
+    this.view.addChild(this.menuText);
+  }
+
+  Menu.prototype.show = function() {
+    TweenMax.killTweensOf(this.view.position);
+    TweenMax.to(this.view.position, 0.3, {
+      y: 0,
+      ease: Power4.easeOut
+    });
+    this.isOpen = true;
+    return null;
+  };
+
+  Menu.prototype.hide = function() {
+    this.isOpen = false;
+    TweenMax.killTweensOf(this.view.position);
+    TweenMax.to(this.view.position, 0.3, {
+      y: window.innerHeight,
+      ease: Power4.easeOut
+    });
+    return null;
+  };
+
+  Menu.prototype.resize = function() {
+    this.bg.clear();
+    this.bg.beginFill(0, this.bgAlpha);
+    this.bg.drawRect(0, 0, window.innerWidth, window.innerHeight);
+    this.bg.endFill();
+    return null;
+  };
+
+  Menu.prototype.enable = function() {
+    return null;
+  };
+
+  Menu.prototype.disable = function() {
+    return null;
+  };
+
+  Menu.prototype.update = function() {
+    var but, curAngle, dist, i, minDist, xd, yd, _i, _j, _len, _ref, _ref1;
+    if (this.view.position.y === window.innerHeight) {
+      return;
+    }
+    yd = (window.innerHeight * 0.5) - this.app.pointerPosition.y;
+    xd = (window.innerWidth * 0.5) - this.app.pointerPosition.x;
+    curAngle = MathUtils.radToDeg(Math.atan2(yd, xd));
+    curAngle += 180;
+    minDist = 180;
+    for (i = _i = 0, _ref = this.buttons.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      this.buttonSprites[i].position.x = (window.innerWidth * 0.5) + this.buttons[i].position.x;
+      this.buttonSprites[i].position.y = (window.innerHeight * 0.5) + this.buttons[i].position.y;
+      dist = this.checkAngleDistance(curAngle, this.buttons[i].angle);
+      if (dist < minDist) {
+        minDist = dist;
+        this.currentButton = this.buttons[i];
+      }
+    }
+    _ref1 = this.buttons;
+    for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
+      but = _ref1[_j];
+      if (but === this.currentButton && !but.active) {
+        but.active = true;
+        this.view.addChild(this.buttonSprites[but.id]);
+        TweenMax.killTweensOf(this.buttonSprites[but.id].scale);
+        TweenMax.killTweensOf(but);
+        TweenMax.killTweensOf(this.menuText);
+        TweenMax.to(this.buttonSprites[but.id].scale, 1.2, {
+          x: this.overScale,
+          y: this.overScale,
+          ease: Elastic.easeOut
+        });
+        TweenMax.to(but, 0.3, {
+          s: 100,
+          onUpdate: this.updateButtonTint,
+          onUpdateParams: [but],
+          ease: Power4.easeOut
+        });
+        TweenMax.to(this.menuText, 0.15, {
+          alpha: 0,
+          ease: Power4.easeOut,
+          onComplete: this.updateMenuText
+        });
+      } else if (but.active && but !== this.currentButton) {
+        but.active = false;
+        TweenMax.killTweensOf(this.buttonSprites[but.id].scale);
+        TweenMax.killTweensOf(but);
+        TweenMax.to(this.buttonSprites[but.id].scale, 1.2, {
+          x: 1,
+          y: 1,
+          ease: Elastic.easeOut
+        });
+        TweenMax.to(but, 1.2, {
+          s: 0,
+          onUpdate: this.updateButtonTint,
+          onUpdateParams: [but],
+          ease: Power4.easeOut
+        });
+      }
+    }
+    return null;
+  };
+
+  Menu.prototype.updateMenuText = function() {
+    this.menuText.setText(this.currentButton.name);
+    TweenMax.to(this.menuText, 0.15, {
+      alpha: 1,
+      ease: Power4.easeOut
+    });
+    return null;
+  };
+
+  Menu.prototype.updateButtonTint = function(but) {
+    this.buttonSprites[but.id].tint = ColourConversion.hsbToHex([but.angle, but.s, but.b]);
+    return null;
+  };
+
+  Menu.prototype.checkAngleDistance = function(current, target) {
+    var dif;
+    dif = Math.abs(current - target);
+    if (dif > 180) {
+      dif = 360 - dif;
+    }
+    return dif;
+  };
+
+  Menu.prototype.createButtons = function() {
+    var but, i, inc, x, y, _i, _ref;
+    inc = 360 / this.data.length;
+    for (i = _i = 0, _ref = this.data.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+      x = Math.cos(MathUtils.degToRad(inc * i)) * this.radius;
+      y = Math.sin(MathUtils.degToRad(inc * i)) * this.radius;
+      but = new Node(x, y);
+      but.angle = inc * i;
+      but.id = i;
+      but.name = this.data[i].classId;
+      but.active = false;
+      but.s = 0;
+      but.b = 100;
+      this.buttons.push(but);
+      this.createButtonSprite(x, y);
+    }
+    return null;
+  };
+
+  Menu.prototype.createButtonSprite = function(x, y) {
+    var sp;
+    sp = new PIXI.Graphics();
+    sp.beginFill(0xe3e3e3);
+    sp.drawCircle(0, 0, this.buttonSize);
+    sp.endFill();
+    sp.position.x = x;
+    sp.position.y = y;
+    this.buttonSprites.push(sp);
+    this.view.addChild(sp);
+    return null;
+  };
+
+  return Menu;
+
+})();
+
 MenuButton = (function() {
   MenuButton.prototype.isActive = false;
 
@@ -3449,187 +3650,6 @@ MenuButton = (function() {
   };
 
   return MenuButton;
-
-})();
-
-Menu = (function() {
-  function Menu(app, data, renderer) {
-    this.app = app;
-    this.data = data;
-    this.renderer = renderer;
-    this.checkAngleDistance = __bind(this.checkAngleDistance, this);
-    this.updateButtonTint = __bind(this.updateButtonTint, this);
-    this.update = __bind(this.update, this);
-    this.disable = __bind(this.disable, this);
-    this.enable = __bind(this.enable, this);
-    this.resize = __bind(this.resize, this);
-    this.hide = __bind(this.hide, this);
-    this.show = __bind(this.show, this);
-    this.view = new PIXI.DisplayObjectContainer();
-    this.bgAlpha = 0.9;
-    this.bg = new PIXI.Graphics();
-    this.view.addChild(this.bg);
-    this.resize();
-    this.mouseDown = false;
-    this.isOpen = true;
-    this.buttons = [];
-    this.buttonSprites = [];
-    this.buttonSize = 20;
-    this.radius = (Math.min(window.innerWidth, window.innerHeight) * 0.5) - 50;
-    this.createButtons();
-    this.currentButton = this.buttons[this.app.currentSketch];
-    this.menuText = new PIXI.Text(this.currentButton.name, {
-      font: '300 27px Lato',
-      fill: '#e3e3e3'
-    });
-    this.menuText.anchor.x = 0.5;
-    this.menuText.anchor.y = 0.5;
-    this.menuText.position.x = Math.round(window.innerWidth * 0.5);
-    this.menuText.position.y = Math.round(window.innerHeight * 0.5);
-    this.view.addChild(this.menuText);
-  }
-
-  Menu.prototype.show = function() {
-    TweenMax.killTweensOf(this.view.position);
-    TweenMax.to(this.view.position, 0.3, {
-      y: 0,
-      ease: Power4.easeOut
-    });
-    this.isOpen = true;
-    return null;
-  };
-
-  Menu.prototype.hide = function() {
-    this.isOpen = false;
-    TweenMax.killTweensOf(this.view.position);
-    TweenMax.to(this.view.position, 0.3, {
-      y: window.innerHeight,
-      ease: Power4.easeOut
-    });
-    return null;
-  };
-
-  Menu.prototype.resize = function() {
-    this.bg.clear();
-    this.bg.beginFill(0, this.bgAlpha);
-    this.bg.drawRect(0, 0, window.innerWidth, window.innerHeight);
-    this.bg.endFill();
-    return null;
-  };
-
-  Menu.prototype.enable = function() {
-    return null;
-  };
-
-  Menu.prototype.disable = function() {
-    return null;
-  };
-
-  Menu.prototype.update = function() {
-    var but, curAngle, dist, i, minDist, xd, yd, _i, _j, _len, _ref, _ref1;
-    if (this.view.position.y === window.innerHeight) {
-      return;
-    }
-    yd = (window.innerHeight * 0.5) - this.app.pointerPosition.y;
-    xd = (window.innerWidth * 0.5) - this.app.pointerPosition.x;
-    curAngle = MathUtils.radToDeg(Math.atan2(yd, xd));
-    curAngle += 180;
-    minDist = 180;
-    for (i = _i = 0, _ref = this.buttons.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-      this.buttonSprites[i].position.x = (window.innerWidth * 0.5) + this.buttons[i].position.x;
-      this.buttonSprites[i].position.y = (window.innerHeight * 0.5) + this.buttons[i].position.y;
-      dist = this.checkAngleDistance(curAngle, this.buttons[i].angle);
-      if (dist < minDist) {
-        minDist = dist;
-        this.currentButton = this.buttons[i];
-      }
-    }
-    _ref1 = this.buttons;
-    for (_j = 0, _len = _ref1.length; _j < _len; _j++) {
-      but = _ref1[_j];
-      if (but === this.currentButton && !but.active) {
-        but.active = true;
-        TweenMax.killTweensOf(this.buttonSprites[but.id].scale);
-        TweenMax.killTweensOf(but);
-        TweenMax.to(this.buttonSprites[but.id].scale, 1.2, {
-          x: 2,
-          y: 2,
-          ease: Elastic.easeOut
-        });
-        TweenMax.to(but, 0.3, {
-          s: 100,
-          onUpdate: this.updateButtonTint,
-          onUpdateParams: [but],
-          ease: Power4.easeOut
-        });
-        this.menuText.setText(but.name);
-      } else if (but.active && but !== this.currentButton) {
-        but.active = false;
-        TweenMax.killTweensOf(this.buttonSprites[but.id].scale);
-        TweenMax.killTweensOf(but);
-        TweenMax.to(this.buttonSprites[but.id].scale, 1.2, {
-          x: 1,
-          y: 1,
-          ease: Elastic.easeOut
-        });
-        TweenMax.to(but, 1.2, {
-          s: 0,
-          onUpdate: this.updateButtonTint,
-          onUpdateParams: [but],
-          ease: Power4.easeOut
-        });
-      }
-    }
-    return null;
-  };
-
-  Menu.prototype.updateButtonTint = function(but) {
-    this.buttonSprites[but.id].tint = ColourConversion.hsbToHex([but.angle, but.s, but.b]);
-    return null;
-  };
-
-  Menu.prototype.checkAngleDistance = function(current, target) {
-    var dif;
-    dif = Math.abs(current - target);
-    if (dif > 180) {
-      dif = 360 - dif;
-    }
-    return dif;
-  };
-
-  Menu.prototype.createButtons = function() {
-    var but, i, inc, x, y, _i, _ref;
-    inc = 360 / this.data.length;
-    for (i = _i = 0, _ref = this.data.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-      x = Math.cos(MathUtils.degToRad(inc * i)) * this.radius;
-      y = Math.sin(MathUtils.degToRad(inc * i)) * this.radius;
-      but = new Node(x, y);
-      but.angle = inc * i;
-      but.id = i;
-      but.name = this.data[i].classId;
-      but.active = false;
-      but.s = 0;
-      but.b = 100;
-      this.buttons.push(but);
-      this.createButtonSprite(x, y);
-    }
-    return null;
-  };
-
-  Menu.prototype.createButtonSprite = function(x, y) {
-    var sp;
-    sp = new PIXI.Graphics();
-    sp.beginFill(0xe3e3e3);
-    sp.drawCircle(0, 0, this.buttonSize);
-    sp.endFill();
-    sp.position.x = x;
-    sp.position.y = y;
-    this.buttonSprites.push(sp);
-    this.view.addChild(sp);
-    return null;
-  };
-
-  return Menu;
 
 })();
 
@@ -3829,6 +3849,7 @@ App = (function() {
     }
     this.numSketches = this.sketches.length;
     this.currentSketch = this.sketches.length - 1;
+    this.infoOpen = true;
     this.sketchHolder = new PIXI.DisplayObjectContainer();
     this.bg = new PIXI.Graphics();
     this.bg.beginFill(this.stageColor);
@@ -3836,15 +3857,23 @@ App = (function() {
     this.bg.endFill();
     this.sketchHolder.addChild(this.bg);
     this.menuPanel = new Menu(this, this.data);
+    this.info = document.getElementById('wrapper');
     this.stage.addChild(this.sketchHolder);
     this.sketchHolder.addChild(this.menuPanel.view);
+    this.buttonHolder = new PIXI.DisplayObjectContainer();
+    this.buttonHolder.position.x = -64;
+    this.buttonHolder.position.y = window.innerHeight;
+    this.stage.addChild(this.buttonHolder);
     this.tab = PIXI.Sprite.fromImage('img/menu.png');
-    this.tab.pivot.y = 64;
-    this.tab.position.x = -64;
-    this.tab.position.y = window.innerHeight;
-    this.stage.addChild(this.tab);
-    this.tab.mouseup = this.menuPanel.show;
+    this.tab.position.y = -64;
+    this.buttonHolder.addChild(this.tab);
     this.tab.interactive = true;
+    this.tab.buttonMode = true;
+    this.infoTab = PIXI.Sprite.fromImage('img/info.png');
+    this.infoTab.position.x = 65;
+    this.buttonHolder.addChild(this.infoTab);
+    this.infoTab.interactive = true;
+    this.infoTab.buttonMode = true;
     this.pointerPosition = {
       x: window.innerWidth * 0.5,
       y: window.innerHeight * 0.5
@@ -3854,8 +3883,11 @@ App = (function() {
     this.sketchHolder.hitArea = new PIXI.Rectangle(0, 0, window.innerWidth, window.innerHeight);
     if (Modernizr.touch) {
       this.tab.tap = function() {
-        TweenMax.killTweensOf(_this.tab.position);
-        TweenMax.to(_this.tab.position, 0.3, {
+        if (_this.infoOpen) {
+          return;
+        }
+        TweenMax.killTweensOf(_this.buttonHolder.position);
+        TweenMax.to(_this.buttonHolder.position, 0.3, {
           x: -64,
           ease: Power4.easeOut,
           onComplete: function() {
@@ -3864,15 +3896,78 @@ App = (function() {
         });
         return null;
       };
+      this.info.ontouchend = function(e) {
+        _this.infoOpen = false;
+        TweenMax.to(_this.info, 0.3, {
+          css: {
+            left: '-100%'
+          },
+          ease: Power4.easeOut
+        });
+        TweenMax.to(_this.infoTab.position, 0.3, {
+          y: -64,
+          ease: Power4.easeOut,
+          delay: 0.3
+        });
+        return null;
+      };
+      this.infoTab.tap = function() {
+        _this.infoOpen = true;
+        TweenMax.to(_this.infoTab.position, 0.3, {
+          y: 0,
+          ease: Power4.easeOut
+        });
+        TweenMax.to(_this.info, 0.3, {
+          css: {
+            left: 0
+          },
+          ease: Power4.easeOut,
+          delay: 0.3
+        });
+        return null;
+      };
     } else {
       this.tab.mouseup = function() {
-        TweenMax.killTweensOf(_this.tab.position);
-        TweenMax.to(_this.tab.position, 0.3, {
+        if (_this.infoOpen) {
+          return;
+        }
+        TweenMax.killTweensOf(_this.buttonHolder.position);
+        TweenMax.to(_this.buttonHolder.position, 0.3, {
           x: -64,
           ease: Power4.easeOut,
           onComplete: function() {
             return _this.menuPanel.show();
           }
+        });
+        return null;
+      };
+      this.info.onclick = function(e) {
+        _this.infoOpen = false;
+        TweenMax.to(_this.info, 0.3, {
+          css: {
+            left: '-100%'
+          },
+          ease: Power4.easeOut
+        });
+        TweenMax.to(_this.infoTab.position, 0.3, {
+          y: -64,
+          ease: Power4.easeOut,
+          delay: 0.3
+        });
+        return null;
+      };
+      this.infoTab.mouseup = function() {
+        _this.infoOpen = true;
+        TweenMax.to(_this.infoTab.position, 0.3, {
+          y: 0,
+          ease: Power4.easeOut
+        });
+        TweenMax.to(_this.info, 0.3, {
+          css: {
+            left: 0
+          },
+          ease: Power4.easeOut,
+          delay: 0.3
         });
         return null;
       };
@@ -3880,6 +3975,7 @@ App = (function() {
     window.onresize = function() {
       var sketch, _j, _len1, _ref1;
       _this.menuPanel.resize();
+      _this.buttonHolder.position.y = window.innerHeight;
       _this.renderer.resize(window.innerWidth, window.innerHeight);
       _this.bg.clear();
       _this.bg.beginFill(_this.stageColor);
@@ -3899,7 +3995,6 @@ App = (function() {
 
   App.prototype.enableObject = function(target) {
     target.interactive = true;
-    target.mouseChildren = false;
     if (!Modernizr.touch) {
       target.mousemove = this.handleMove;
       target.mousedown = this.handleStart;
@@ -3922,10 +4017,10 @@ App = (function() {
 
   App.prototype.handleEnd = function(e) {
     this.mousePressed = false;
-    if (this.menuPanel.isOpen) {
+    if (this.menuPanel.isOpen && !this.infoOpen) {
       this.selectSketch(this.menuPanel.currentButton.id);
       this.menuPanel.hide();
-      TweenMax.to(this.tab.position, 0.3, {
+      TweenMax.to(this.buttonHolder.position, 0.3, {
         x: 0,
         ease: Power4.easeOut,
         delay: 0.3

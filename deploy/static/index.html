@@ -8,14 +8,31 @@
 		<link href="css/pwpcss.min.css" rel="stylesheet" type="text/css">
 
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-		<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
-		<script src="//cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
+		<script src="js/vendors/TweenMax.min.js"></script>
+		<script src="js/vendors/dat.gui.min.js"></script>
 		<script type="text/javascript" src="js/vendors/modernizr.js"></script>
 		<script type="text/javascript" src="js/vendors/pixi.js"></script>
 		<script type="text/javascript" src="js/app.js"></script>
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-49962912-1', 'cormedialtd.net');
+			ga('send', 'pageview');
+		</script>
 	</head>
 	<body>
-		
+		<div id='wrapper'>
+			<div id='about'>
+				<h1>Playing with PIXI</h1>
+					<p>A collection of toys built with Pixi.js and coffeescript</p>
+					<p>Mostly these are little things I was trying out or prototyping for work. The goal was just to collect all those little ideas that pop up into your head. Rather than attempt to go big on each one, I set myself the limit of one evening per toy and I could only use one sprite or Pixi's built in graphics for everything. They should hopefully grow in complexity as you work around clockwise, with red being the first thing I made and the pink one next to it the latest.</p>
+					<p>Source and other links below. The source isn't very tidy or annotated at the moment, maybe I'll get round to it one day ;)</p>
+					<p>source: <a href='https://github.com/desmarkie/Playing-With-Pixi' target='_blank'>http://github.com</a><br/>Pixi.js: <a href='http://pixijs.com' target='_blank'>http://pixijs.com</a><br/>Coffeescript: <a href='http://coffeescript.org' target='_blank'>http://coffeescript.org</a></p>
+			</div>
+		</div>
 	</body>
 	
 	<script type="text/javascript">
@@ -23,13 +40,6 @@
 			app = new App();
 			app.loadCurrentSketch();
 		}
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-ga('create', 'UA-49962912-1', 'cormedialtd.net');
-ga('send', 'pageview');
 	</script>
 	<script>
   

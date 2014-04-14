@@ -47,6 +47,8 @@ class App
 		@numSketches = @sketches.length
 		@currentSketch = @sketches.length - 1
 
+		@infoOpen = true
+
 		@sketchHolder = new PIXI.DisplayObjectContainer()
 		@bg = new PIXI.Graphics()
 		@bg.beginFill @stageColor
@@ -55,17 +57,28 @@ class App
 		@sketchHolder.addChild @bg
 
 		@menuPanel = new Menu(this, @data)
+		@info = document.getElementById 'wrapper'
+		
 
 		@stage.addChild @sketchHolder
 		@sketchHolder.addChild @menuPanel.view
 
+		@buttonHolder = new PIXI.DisplayObjectContainer()
+		@buttonHolder.position.x = -64
+		@buttonHolder.position.y = window.innerHeight
+		@stage.addChild @buttonHolder
+
 		@tab = PIXI.Sprite.fromImage 'img/menu.png'
-		@tab.pivot.y = 64
-		@tab.position.x = -64
-		@tab.position.y = window.innerHeight
-		@stage.addChild @tab
-		@tab.mouseup = @menuPanel.show
+		@tab.position.y = -64
+		@buttonHolder.addChild @tab
 		@tab.interactive = true
+		@tab.buttonMode = true
+
+		@infoTab = PIXI.Sprite.fromImage 'img/info.png'
+		@infoTab.position.x = 65
+		@buttonHolder.addChild @infoTab
+		@infoTab.interactive = true
+		@infoTab.buttonMode = true
 
 		@pointerPosition = {x:window.innerWidth*0.5, y:window.innerHeight*0.5}
 		@mousePressed = false
@@ -75,21 +88,46 @@ class App
 
 		if Modernizr.touch
 			@tab.tap = =>
-				TweenMax.killTweensOf @tab.position
-				TweenMax.to @tab.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: =>
+				return if @infoOpen
+				TweenMax.killTweensOf @buttonHolder.position
+				TweenMax.to @buttonHolder.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: =>
 					@menuPanel.show()
 				}
 				null
+			@info.ontouchend = (e) =>
+				# return if e.target != @info
+				@infoOpen = false
+				TweenMax.to(@info, 0.3, {css:{left:'-100%'}, ease:Power4.easeOut})
+				TweenMax.to(@infoTab.position, 0.3, {y: -64, ease:Power4.easeOut, delay:0.3})
+				null
+			@infoTab.tap = =>
+				@infoOpen = true
+				TweenMax.to(@infoTab.position, 0.3, {y:0, ease:Power4.easeOut})
+				TweenMax.to(@info, 0.3, {css:{left:0}, ease:Power4.easeOut, delay:0.3})
+				null
 		else
 			@tab.mouseup = =>
-				TweenMax.killTweensOf @tab.position
-				TweenMax.to @tab.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: =>
+				return if @infoOpen
+				TweenMax.killTweensOf @buttonHolder.position
+				TweenMax.to @buttonHolder.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: =>
 					@menuPanel.show()
 				}
+				null
+			@info.onclick = (e) =>
+				# return if e.target != @info
+				@infoOpen = false
+				TweenMax.to(@info, 0.3, {css:{left:'-100%'}, ease:Power4.easeOut})
+				TweenMax.to(@infoTab.position, 0.3, {y:-64, ease:Power4.easeOut, delay:0.3})
+				null
+			@infoTab.mouseup = =>
+				@infoOpen = true
+				TweenMax.to(@infoTab.position, 0.3, {y:0, ease:Power4.easeOut})
+				TweenMax.to(@info, 0.3, {css:{left:0}, ease:Power4.easeOut, delay:0.3})
 				null
 
 		window.onresize = =>
 			@menuPanel.resize()
+			@buttonHolder.position.y = window.innerHeight
 			@renderer.resize window.innerWidth, window.innerHeight
 			@bg.clear()
 			@bg.beginFill @stageColor
@@ -131,10 +169,10 @@ class App
 	handleEnd: (e) =>
 		# console.log 'handleEnd', @menuPanel.isOpen, e.target is @sketchHolder
 		@mousePressed = false
-		if @menuPanel.isOpen
+		if @menuPanel.isOpen && !@infoOpen
 			@selectSketch @menuPanel.currentButton.id
 			@menuPanel.hide()
-			TweenMax.to @tab.position, 0.3, {x:0, ease:Power4.easeOut, delay:0.3}
+			TweenMax.to @buttonHolder.position, 0.3, {x:0, ease:Power4.easeOut, delay:0.3}
 		null
 
 	handleMove: (e) =>
