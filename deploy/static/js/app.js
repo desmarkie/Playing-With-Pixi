@@ -3818,18 +3818,21 @@ TessellationOne = (function(_super) {
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
+    this.redraw = __bind(this.redraw, this);
     this.load = __bind(this.load, this);
     TessellationOne.__super__.constructor.call(this, this.renderer, this.name);
   }
 
   TessellationOne.prototype.load = function() {
-    var g, sp;
+    var g;
     if (!this.loaded) {
       this.makeGui();
       this.unitSize = 10;
       this.tiles = {};
       this.tileLayers = [];
       this.curLayer = 0;
+      this.maxLayers = 20;
+      this.scale = 1;
       g = new PIXI.Graphics();
       this.drawTile(g);
       this.tileTex = g.generateTexture();
@@ -3837,7 +3840,16 @@ TessellationOne = (function(_super) {
       this.spriteHolder.position.x = window.innerWidth * 0.5;
       this.spriteHolder.position.y = window.innerHeight * 0.5;
       this.view.addChild(this.spriteHolder);
+      this.gui.add(this, 'maxLayers', 2, 50).name('Max Layers').onFinishChange(this.redraw);
+      this.gui.add(this, 'scale', 0.1, 1).name('Tile Scale').onFinishChange(this.redraw);
     }
+    this.redraw();
+    TessellationOne.__super__.load.call(this);
+    return null;
+  };
+
+  TessellationOne.prototype.redraw = function() {
+    var sp;
     while (this.spriteHolder.children.length > 0) {
       this.spriteHolder.removeChild(this.spriteHolder.children[0]);
     }
@@ -3846,11 +3858,11 @@ TessellationOne = (function(_super) {
     this.curLayer = 0;
     sp = new PIXI.Sprite(this.tileTex);
     sp.anchor.x = sp.anchor.y = 0.5;
+    sp.scale.x = sp.scale.y = this.scale;
+    sp.xref = sp.yref = 0;
     this.spriteHolder.addChild(sp);
     this.tileLayers.push([sp]);
-    this.tiles['0_0'] = sp;
-    TessellationOne.__super__.load.call(this);
-    return null;
+    return this.tiles['0_0'] = sp;
   };
 
   TessellationOne.prototype.drawTile = function(canvas) {
@@ -3870,28 +3882,28 @@ TessellationOne = (function(_super) {
   };
 
   TessellationOne.prototype.drawVert = function(canvas, xOff, yOff) {
-    canvas.moveTo(xOff * this.unitSize, yOff * this.unitSize);
-    canvas.lineTo((xOff + 2) * this.unitSize, yOff * this.unitSize);
-    canvas.lineTo((xOff + 2) * this.unitSize, (yOff + 2) * this.unitSize);
-    canvas.lineTo((xOff + 3) * this.unitSize, (yOff + 2) * this.unitSize);
-    canvas.lineTo((xOff + 3) * this.unitSize, (yOff + 3) * this.unitSize);
-    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 3) * this.unitSize);
-    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 1) * this.unitSize);
-    canvas.lineTo(xOff * this.unitSize, (yOff + 1) * this.unitSize);
-    canvas.lineTo(xOff * this.unitSize, yOff * this.unitSize);
+    canvas.moveTo(xOff * (this.unitSize * this.scale), yOff * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 2) * (this.unitSize * this.scale), yOff * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 2) * (this.unitSize * this.scale), (yOff + 2) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 3) * (this.unitSize * this.scale), (yOff + 2) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 3) * (this.unitSize * this.scale), (yOff + 3) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 1) * (this.unitSize * this.scale), (yOff + 3) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 1) * (this.unitSize * this.scale), (yOff + 1) * (this.unitSize * this.scale));
+    canvas.lineTo(xOff * (this.unitSize * this.scale), (yOff + 1) * (this.unitSize * this.scale));
+    canvas.lineTo(xOff * (this.unitSize * this.scale), yOff * (this.unitSize * this.scale));
     return null;
   };
 
   TessellationOne.prototype.drawHori = function(canvas, xOff, yOff) {
-    canvas.moveTo(xOff * this.unitSize, (yOff + 1) * this.unitSize);
-    canvas.lineTo((xOff + 2) * this.unitSize, (yOff + 1) * this.unitSize);
-    canvas.lineTo((xOff + 2) * this.unitSize, yOff * this.unitSize);
-    canvas.lineTo((xOff + 3) * this.unitSize, yOff * this.unitSize);
-    canvas.lineTo((xOff + 3) * this.unitSize, (yOff + 2) * this.unitSize);
-    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 2) * this.unitSize);
-    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 3) * this.unitSize);
-    canvas.lineTo(xOff * this.unitSize, (yOff + 3) * this.unitSize);
-    canvas.lineTo(xOff * this.unitSize, (yOff + 1) * this.unitSize);
+    canvas.moveTo(xOff * (this.unitSize * this.scale), (yOff + 1) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 2) * (this.unitSize * this.scale), (yOff + 1) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 2) * (this.unitSize * this.scale), yOff * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 3) * (this.unitSize * this.scale), yOff * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 3) * (this.unitSize * this.scale), (yOff + 2) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 1) * (this.unitSize * this.scale), (yOff + 2) * (this.unitSize * this.scale));
+    canvas.lineTo((xOff + 1) * (this.unitSize * this.scale), (yOff + 3) * (this.unitSize * this.scale));
+    canvas.lineTo(xOff * (this.unitSize * this.scale), (yOff + 3) * (this.unitSize * this.scale));
+    canvas.lineTo(xOff * (this.unitSize * this.scale), (yOff + 1) * (this.unitSize * this.scale));
     return null;
   };
 
@@ -3901,8 +3913,8 @@ TessellationOne = (function(_super) {
     _ref = this.tileLayers[this.curLayer];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       tile = _ref[_i];
-      x = tile.position.x / this.unitSize;
-      y = tile.position.y / this.unitSize;
+      x = tile.xref;
+      y = tile.yref;
       a = (x + 2) + '_' + (y + 4);
       b = (x - 4) + '_' + (y + 2);
       c = (x - 2) + '_' + (y - 4);
@@ -3933,9 +3945,12 @@ TessellationOne = (function(_super) {
     var sp;
     sp = new PIXI.Sprite(this.tileTex);
     sp.anchor.x = sp.anchor.y = 0.5;
-    sp.position.x = x * this.unitSize;
-    sp.position.y = y * this.unitSize;
-    sp.alpha = 1 - (this.curLayer / 20);
+    sp.scale.x = sp.scale.y = this.scale;
+    sp.xref = x;
+    sp.yref = y;
+    sp.position.x = x * (this.unitSize * this.scale);
+    sp.position.y = y * (this.unitSize * this.scale);
+    sp.alpha = 1 - (this.curLayer / this.maxLayers);
     this.spriteHolder.addChild(sp);
     return sp;
   };
@@ -3950,7 +3965,7 @@ TessellationOne = (function(_super) {
     if (this.cancelled) {
       return;
     }
-    if (this.curLayer < 20) {
+    if (this.curLayer < this.maxLayers) {
       this.addLayer();
     }
     return null;

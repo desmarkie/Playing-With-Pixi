@@ -15,6 +15,8 @@ class TessellationOne extends Sketch
 			@tileLayers = []
 
 			@curLayer = 0
+			@maxLayers = 20
+			@scale = 1
 
 			g = new PIXI.Graphics()
 			@drawTile g
@@ -26,6 +28,18 @@ class TessellationOne extends Sketch
 			@spriteHolder.position.y = window.innerHeight * 0.5
 			@view.addChild @spriteHolder
 
+			@gui.add(@, 'maxLayers', 2, 50).name('Max Layers').onFinishChange(@redraw)
+			@gui.add(@, 'scale', 0.1, 1).name('Tile Scale').onFinishChange(@redraw)
+
+		# @waiting = false
+		
+		@redraw()
+
+		super()
+
+		null
+
+	redraw: =>
 		while @spriteHolder.children.length > 0
 			@spriteHolder.removeChild @spriteHolder.children[0]
 
@@ -35,19 +49,12 @@ class TessellationOne extends Sketch
 
 		sp = new PIXI.Sprite @tileTex
 		sp.anchor.x = sp.anchor.y = 0.5
+		sp.scale.x = sp.scale.y = @scale
+		sp.xref = sp.yref = 0
 		@spriteHolder.addChild sp
 
 		@tileLayers.push [sp]
 		@tiles['0_0'] = sp
-
-
-
-		# @waiting = false
-		
-
-		super()
-
-		null
 
 	drawTile: (canvas) ->
 		canvas.beginFill 0xFFFFFF
@@ -65,34 +72,34 @@ class TessellationOne extends Sketch
 		null
 
 	drawVert: (canvas, xOff, yOff) ->
-		canvas.moveTo xOff * @unitSize, yOff * @unitSize
-		canvas.lineTo (xOff+2) * @unitSize, yOff * @unitSize
-		canvas.lineTo (xOff+2) * @unitSize, (yOff+2) * @unitSize
-		canvas.lineTo (xOff+3) * @unitSize, (yOff+2) * @unitSize
-		canvas.lineTo (xOff+3) * @unitSize, (yOff+3) * @unitSize
-		canvas.lineTo (xOff+1) * @unitSize, (yOff+3) * @unitSize
-		canvas.lineTo (xOff+1) * @unitSize, (yOff+1) * @unitSize
-		canvas.lineTo xOff * @unitSize, (yOff+1) * @unitSize
-		canvas.lineTo xOff * @unitSize, yOff * @unitSize
+		canvas.moveTo xOff * (@unitSize * @scale), yOff * (@unitSize * @scale)
+		canvas.lineTo (xOff+2) * (@unitSize * @scale), yOff * (@unitSize * @scale)
+		canvas.lineTo (xOff+2) * (@unitSize * @scale), (yOff+2) * (@unitSize * @scale)
+		canvas.lineTo (xOff+3) * (@unitSize * @scale), (yOff+2) * (@unitSize * @scale)
+		canvas.lineTo (xOff+3) * (@unitSize * @scale), (yOff+3) * (@unitSize * @scale)
+		canvas.lineTo (xOff+1) * (@unitSize * @scale), (yOff+3) * (@unitSize * @scale)
+		canvas.lineTo (xOff+1) * (@unitSize * @scale), (yOff+1) * (@unitSize * @scale)
+		canvas.lineTo xOff * (@unitSize * @scale), (yOff+1) * (@unitSize * @scale)
+		canvas.lineTo xOff * (@unitSize * @scale), yOff * (@unitSize * @scale)
 		null
 
 	drawHori: (canvas, xOff, yOff) ->
-		canvas.moveTo xOff * @unitSize, (yOff+1) * @unitSize
-		canvas.lineTo (xOff+2) * @unitSize, (yOff+1) * @unitSize
-		canvas.lineTo (xOff+2) * @unitSize, yOff * @unitSize
-		canvas.lineTo (xOff+3) * @unitSize, yOff * @unitSize
-		canvas.lineTo (xOff+3) * @unitSize, (yOff+2) * @unitSize
-		canvas.lineTo (xOff+1) * @unitSize, (yOff+2) * @unitSize
-		canvas.lineTo (xOff+1) * @unitSize, (yOff+3) * @unitSize
-		canvas.lineTo xOff * @unitSize, (yOff+3) * @unitSize
-		canvas.lineTo xOff * @unitSize, (yOff+1) * @unitSize
+		canvas.moveTo xOff * (@unitSize * @scale), (yOff+1) * (@unitSize * @scale)
+		canvas.lineTo (xOff+2) * (@unitSize * @scale), (yOff+1) * (@unitSize * @scale)
+		canvas.lineTo (xOff+2) * (@unitSize * @scale), yOff * (@unitSize * @scale)
+		canvas.lineTo (xOff+3) * (@unitSize * @scale), yOff * (@unitSize * @scale)
+		canvas.lineTo (xOff+3) * (@unitSize * @scale), (yOff+2) * (@unitSize * @scale)
+		canvas.lineTo (xOff+1) * (@unitSize * @scale), (yOff+2) * (@unitSize * @scale)
+		canvas.lineTo (xOff+1) * (@unitSize * @scale), (yOff+3) * (@unitSize * @scale)
+		canvas.lineTo xOff * (@unitSize * @scale), (yOff+3) * (@unitSize * @scale)
+		canvas.lineTo xOff * (@unitSize * @scale), (yOff+1) * (@unitSize * @scale)
 		null
 
 	addLayer: ->
 		layer = []
 		for tile in @tileLayers[@curLayer]
-			x = tile.position.x / @unitSize
-			y = tile.position.y / @unitSize
+			x = tile.xref
+			y = tile.yref
 			a = (x + 2)+'_'+(y + 4)
 			b = (x - 4)+'_'+(y + 2)
 			c = (x - 2)+'_'+(y - 4)
@@ -116,9 +123,12 @@ class TessellationOne extends Sketch
 	addTile: (x, y) ->
 		sp = new PIXI.Sprite @tileTex
 		sp.anchor.x = sp.anchor.y = 0.5
-		sp.position.x = x * @unitSize
-		sp.position.y = y * @unitSize
-		sp.alpha = 1 - (@curLayer / 20)
+		sp.scale.x = sp.scale.y = @scale
+		sp.xref = x
+		sp.yref = y
+		sp.position.x = x * (@unitSize * @scale)
+		sp.position.y = y * (@unitSize * @scale)
+		sp.alpha = 1 - (@curLayer / @maxLayers)
 		@spriteHolder.addChild sp
 		return sp
 
@@ -137,7 +147,7 @@ class TessellationOne extends Sketch
 		# 	@waiting = false
 		# 	@addLayer()
 
-		if @curLayer < 20
+		if @curLayer < @maxLayers
 			@addLayer()
 
 		null
