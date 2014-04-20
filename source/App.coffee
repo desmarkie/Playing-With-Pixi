@@ -1,40 +1,16 @@
 # import sketches.*
 # import views.*
 # import PWPData
-# import utils.Timer
 class App
 
-	sketches: null
-
-	data: null
-
-	currentSketch: 0
-	numSketches: null
-
-	liveSketch: null
-
-	textures: null
-
-	infoButton: null
-	menuButton: null
-	menuOpen: false
-	infoOpen: true
-
-	infoPanel: null
-	menuPanel: null
-
-	stageColor: 0x0a0a0a
-
-	spacePressed: false
-
-	degToRad: Math.PI / 180
-	radToDeg: 180 / Math.PI
-
 	constructor: ->
-		@data = new PWPData().data;
+		@data = new PWPData().data
+
+		@spacePressed = false
+		@infoOpen = true
 
 		@renderer = PIXI.autoDetectRenderer window.innerWidth, window.innerHeight
-		@stage = new PIXI.Stage @stageColor
+		@stage = new PIXI.Stage 0x0a0a0a
 
 		document.body.appendChild @renderer.view
 
@@ -47,11 +23,10 @@ class App
 		@numSketches = @sketches.length
 		@currentSketch = @sketches.length - 1
 
-		@infoOpen = true
-
 		@sketchHolder = new PIXI.DisplayObjectContainer()
+
 		@bg = new PIXI.Graphics()
-		@bg.beginFill @stageColor
+		@bg.beginFill 0x0a0a0a
 		@bg.drawRect 0, 0, window.innerWidth, window.innerHeight
 		@bg.endFill()
 		@sketchHolder.addChild @bg
@@ -59,7 +34,6 @@ class App
 		@menuPanel = new Menu(this, @data)
 		@info = document.getElementById 'wrapper'
 		
-
 		@stage.addChild @sketchHolder
 		@sketchHolder.addChild @menuPanel.view
 
@@ -90,12 +64,9 @@ class App
 			@tab.tap = =>
 				return if @infoOpen
 				TweenMax.killTweensOf @buttonHolder.position
-				TweenMax.to @buttonHolder.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: =>
-					@menuPanel.show()
-				}
+				TweenMax.to @buttonHolder.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: @menuPanel.show}
 				null
-			@info.ontouchend = (e) =>
-				# return if e.target != @info
+			@info.ontouchend = =>
 				@infoOpen = false
 				TweenMax.to(@info, 0.3, {css:{left:'-100%'}, ease:Power4.easeOut})
 				TweenMax.to(@infoTab.position, 0.3, {y: -64, ease:Power4.easeOut, delay:0.3})
@@ -109,12 +80,9 @@ class App
 			@tab.mouseup = =>
 				return if @infoOpen
 				TweenMax.killTweensOf @buttonHolder.position
-				TweenMax.to @buttonHolder.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: =>
-					@menuPanel.show()
-				}
+				TweenMax.to @buttonHolder.position, 0.3, {x:-64, ease:Power4.easeOut, onComplete: @menuPanel.show}
 				null
-			@info.onclick = (e) =>
-				# return if e.target != @info
+			@info.onclick = =>
 				@infoOpen = false
 				TweenMax.to(@info, 0.3, {css:{left:'-100%'}, ease:Power4.easeOut})
 				TweenMax.to(@infoTab.position, 0.3, {y:-64, ease:Power4.easeOut, delay:0.3})
@@ -138,11 +106,9 @@ class App
 				sketch.sketch.resize()
 			null
 
-		@init()
+		window.onkeyup = @handleKeyPress
 
 		requestAnimationFrame @update
-
-		# @touchTimer = new Timer()
 
 
 	enableObject: (target) ->
@@ -160,14 +126,12 @@ class App
 		null
 
 	handleStart: (e) =>
-		# @touchTimer.reset()
 		@mousePressed = true
 		@pointerPosition.x = e.global.x
 		@pointerPosition.y = e.global.y
 		null
 
-	handleEnd: (e) =>
-		# console.log 'handleEnd', @menuPanel.isOpen, e.target is @sketchHolder
+	handleEnd: =>
 		@mousePressed = false
 		if @menuPanel.isOpen && !@infoOpen
 			@selectSketch @menuPanel.currentButton.id
@@ -178,40 +142,6 @@ class App
 	handleMove: (e) =>
 		@pointerPosition.x = e.global.x
 		@pointerPosition.y = e.global.y
-		null
-
-	init: =>
-		window.onkeyup = @handleKeyPress
-		null
-
-
-	handleInfoClick: =>
-		if @menuOpen then @handleMenuClick()
-		@infoOpen = !@infoOpen
-		if @infoOpen
-			@infoPanel.show()
-		else
-			@infoPanel.hide()
-		null
-
-	handleMenuClick: =>
-		if @infoOpen then @handleInfoClick()
-		@menuOpen = !@menuOpen
-		if @menuOpen
-			@menuPanel.show()
-			TweenMax.to @infoButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
-		else
-			@menuPanel.hide()
-			TweenMax.to @menuButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
-			TweenMax.to @infoButton, 0.5, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
-		null
-
-	handleInterfaceOut: (e) =>
-		TweenMax.to e.target, 2, {css:{color:'#e3e3e3'}, ease:Power4.easeOut}
-		null
-
-	handleInterfaceOver: (e) =>
-		TweenMax.to e.target, 0.15, {css:{color:'rgb(255, 0, 61)'}, ease:Power4.easeOut}
 		null
 
 	handleKeyPress: (e) =>
@@ -257,12 +187,12 @@ class App
 		null
 
 	removeGui: (sketch) =>
-			sketch.unload()
-			@sketchHolder.removeChild sketch.view
-			if sketch.gui != null
-				document.body.removeChild sketch.gui.domElement
+		sketch.unload()
+		@sketchHolder.removeChild sketch.view
+		if sketch.gui != null
+			document.body.removeChild sketch.gui.domElement
 
-			@loadCurrentSketch()
+		@loadCurrentSketch()
 		null
 
 	changeSketch: (dir) ->
@@ -283,18 +213,17 @@ class App
 			document.body.appendChild @sketches[@currentSketch].sketch.gui.domElement
 			TweenMax.to @sketches[@currentSketch].sketch.gui.domElement, 0.3, {css:{opacity:1}, ease:Power4.easeOut, delay:0.5}
 		TweenMax.to @sketches[@currentSketch].sketch.view, 1, { alpha:1, ease:Power4.easeOut }
-		# console.log 'LOADING SKETCH '+@sketches[@currentSketch].sketch
 		null
 
 	update: =>
-		requestAnimationFrame @update
-
 		@menuPanel.update()
 
 		if @sketches[@currentSketch].sketch.loaded
 			@sketches[@currentSketch].sketch.update()
 
 		@renderer.render @stage
+
+		requestAnimationFrame @update
 
 		null
 

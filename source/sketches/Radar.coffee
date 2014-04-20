@@ -1,3 +1,4 @@
+# import utils.MathUtils
 class Radar extends Sketch
 
 	numSprites: 60
@@ -66,7 +67,7 @@ class Radar extends Sketch
 		if @cancelled then return
 
 		@rotation += @rotationSpeed
-		rot = @rotation * window.app.degToRad
+		rot = MathUtils.degToRad @rotation
 		for i in [0..@numSprites-1]
 			@sprite = @sprites[i]
 			@sprite.position.x = @midX + (Math.cos(rot) * ((@radarWidth/@numSprites)*i))
@@ -101,7 +102,7 @@ class Radar extends Sketch
 			@sprite = new PIXI.Sprite(window.app.textures[0])
 			@sprite.pivot.x = @sprite.pivot.y = 16
 			@sprite.scale.x = @sprite.scale.y = @minScale + (Math.random() * (@maxScale - @minScale))
-			rot = (i * rotInc) * window.app.degToRad
+			rot = MathUtils.degToRad(i * rotInc)
 			@sprite.position.x = @midX + ((@radarWidth/@numSprites)*i)
 			@sprite.position.y = @midY
 			@holder.addChild @sprite

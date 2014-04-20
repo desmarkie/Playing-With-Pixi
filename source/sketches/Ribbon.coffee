@@ -1,3 +1,4 @@
+# import utils.MathUtils
 class Ribbon extends Sketch
 
 	constructor: (@renderer, @name) ->
@@ -102,20 +103,20 @@ class Ribbon extends Sketch
 		@baseNode.ySin += @baseNode.yIncrement
 		@baseNode.ySin %= 360
 
-		@baseNode.position.x = @midx + (Math.cos(@baseNode.xSin*window.app.degToRad) * @baseNode.xOffset)
-		@baseNode.position.y = @midy + (Math.cos(@baseNode.ySin*window.app.degToRad) * @baseNode.yOffset)
+		@baseNode.position.x = @midx + (Math.cos(MathUtils.degToRad(@baseNode.xSin)) * @baseNode.xOffset)
+		@baseNode.position.y = @midy + (Math.cos(MathUtils.degToRad(@baseNode.ySin)) * @baseNode.yOffset)
 
 		# @baseSprite.position.x = @baseNode.position.x
 		# @baseSprite.position.y = @baseNode.position.y
 
 		@nodeA.sin += @nodeA.inc
 		@nodeA.sin %= 360
-		ty = @baseNode.position.y - (Math.sin(@nodeA.sin * window.app.degToRad) * @ribbonWidth)
+		ty = @baseNode.position.y - (Math.sin(MathUtils.degToRad(@nodeA.sin)) * @ribbonWidth)
 		@nodeA.moveTo @baseNode.position.x, ty
 
 		@nodeB.sin += @nodeB.inc
 		@nodeB.sin %= 360
-		ty = @baseNode.position.y + (Math.sin(@nodeB.sin * window.app.degToRad) * @ribbonWidth)
+		ty = @baseNode.position.y + (Math.sin(MathUtils.degToRad(@nodeB.sin)) * @ribbonWidth)
 		@nodeB.moveTo @baseNode.position.x, ty
 
 		# @updateTrails()

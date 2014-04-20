@@ -96,5 +96,11 @@ class PWPData
 			classId:"ShapeShifter",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:QuadTreeTest,
+			classId:"QuadTreeTest",
+			description:"....",
+			instructions:"...."
 		}
 	]

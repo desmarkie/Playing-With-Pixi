@@ -10,7 +10,6 @@ class Sketch
 	load: ->
 		# override me
 		@cancelled = false
-		# requestAnimationFrame @update
 		@loaded = true
 		null
 

@@ -1,3 +1,4 @@
+# import utils.MathUtils
 class Orbits extends Sketch
 
 	constructor: (@renderer, @name) ->
@@ -71,8 +72,8 @@ class Orbits extends Sketch
 		@baseNode.ySin += @baseNode.yIncrement
 		@baseNode.ySin %= 360
 
-		@baseNode.position.x = @midx + (Math.cos(@baseNode.xSin*window.app.degToRad) * @baseNode.xOffset)
-		@baseNode.position.y = @midy + (Math.cos(@baseNode.ySin*window.app.degToRad) * @baseNode.yOffset)
+		@baseNode.position.x = @midx + (Math.cos(MathUtils.degToRad(@baseNode.xSin)) * @baseNode.xOffset)
+		@baseNode.position.y = @midy + (Math.cos(MathUtils.degToRad(@baseNode.ySin)) * @baseNode.yOffset)
 
 		for i in [0..@numSattelites-1]
 			n = @nodes[i]
