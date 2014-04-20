@@ -102,5 +102,11 @@ class PWPData
 			classId:"QuadTreeTest",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:TessellationOne,
+			classId:"TessellationOne",
+			description:"....",
+			instructions:"...."
 		}
 	]
