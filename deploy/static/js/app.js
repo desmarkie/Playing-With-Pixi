@@ -1337,6 +1337,7 @@ Penrose = (function(_super) {
   function Penrose(renderer, name) {
     this.renderer = renderer;
     this.name = name;
+    this.getColour = __bind(this.getColour, this);
     this.resize = __bind(this.resize, this);
     this.update = __bind(this.update, this);
     this.unload = __bind(this.unload, this);
@@ -1432,17 +1433,26 @@ Penrose = (function(_super) {
     for (_i = 0, _len = triangles.length; _i < _len; _i++) {
       tri = triangles[_i];
       if (tri.colour === 1) {
-        this.canvas.beginFill(this.colB);
+        this.canvas.beginFill(this.getColour(tri.a, this.colB));
       } else {
-        this.canvas.beginFill(this.colA);
+        this.canvas.beginFill(this.getColour(tri.a, this.colA));
       }
       this.canvas.moveTo(tri.b[0] * scale, tri.b[1] * scale);
       this.canvas.lineTo(tri.a[0] * scale, tri.a[1] * scale);
       this.canvas.lineTo(tri.c[0] * scale, tri.c[1] * scale);
       this.canvas.endFill();
     }
-    this.canvas.lineStyle(null);
-    return null;
+    return this.canvas.lineStyle(null);
+  };
+
+  Penrose.prototype.getColour = function(pt, col) {
+    var dist, hsb, xd, yd;
+    xd = pt[0] * (this.iterations + 1);
+    yd = pt[1] * (this.iterations + 1);
+    hsb = ColourConversion.hexToHsb(col);
+    dist = Math.sqrt((xd * xd) + (yd * yd));
+    hsb[0] += 120 * (dist / window.innerHeight);
+    return ColourConversion.hsbToHex(hsb);
   };
 
   Penrose.prototype.findMidpoint = function(a, b) {
@@ -3813,70 +3823,121 @@ TessellationOne = (function(_super) {
   }
 
   TessellationOne.prototype.load = function() {
-    var copyOne, copyTex, copyTwo, g, l, sp, tx, ty, x, y;
+    var g, sp;
     if (!this.loaded) {
       this.makeGui();
       this.unitSize = 10;
+      this.tiles = {};
+      this.tileLayers = [];
+      this.curLayer = 0;
       g = new PIXI.Graphics();
       this.drawTile(g);
       this.tileTex = g.generateTexture();
       this.spriteHolder = new PIXI.DisplayObjectContainer();
+      this.spriteHolder.position.x = window.innerWidth * 0.5;
+      this.spriteHolder.position.y = window.innerHeight * 0.5;
       this.view.addChild(this.spriteHolder);
-      x = y = l = 0;
-      y = -3;
-      while ((y * this.unitSize) < window.innerWidth) {
-        sp = new PIXI.Sprite(this.tileTex);
-        tx = ((x * 10) - l) * this.unitSize;
-        ty = y * this.unitSize;
-        sp.position.x = tx;
-        sp.position.y = ty;
-        this.spriteHolder.addChild(sp);
-        x++;
-        if (tx >= window.innerWidth) {
-          l++;
-          x = 0;
-          y += 3;
-        }
-      }
-      this.spriteHolder.position.y = -20;
-      copyTex = this.spriteHolder.generateTexture();
-      copyOne = new PIXI.Sprite(copyTex);
-      this.view.addChild(copyOne);
-      copyOne.position.x = (-2 * this.unitSize) - 510;
-      copyOne.position.y = (1 * this.unitSize) - 50;
-      copyTwo = new PIXI.Sprite(copyTex);
-      this.view.addChild(copyTwo);
-      copyTwo.position.x = (1 * this.unitSize) - 510;
-      copyTwo.position.y = (2 * this.unitSize) - 50;
     }
+    while (this.spriteHolder.children.length > 0) {
+      this.spriteHolder.removeChild(this.spriteHolder.children[0]);
+    }
+    this.tiles = {};
+    this.tileLayers = [];
+    this.curLayer = 0;
+    sp = new PIXI.Sprite(this.tileTex);
+    sp.anchor.x = sp.anchor.y = 0.5;
+    this.spriteHolder.addChild(sp);
+    this.tileLayers.push([sp]);
+    this.tiles['0_0'] = sp;
     TessellationOne.__super__.load.call(this);
     return null;
   };
 
   TessellationOne.prototype.drawTile = function(canvas) {
     canvas.beginFill(0xFFFFFF);
-    canvas.moveTo(0, 0);
-    canvas.lineTo(2 * this.unitSize, 0);
-    canvas.lineTo(2 * this.unitSize, 2 * this.unitSize);
-    canvas.lineTo(3 * this.unitSize, 2 * this.unitSize);
-    canvas.lineTo(3 * this.unitSize, 3 * this.unitSize);
-    canvas.lineTo(1 * this.unitSize, 3 * this.unitSize);
-    canvas.lineTo(1 * this.unitSize, 1 * this.unitSize);
-    canvas.lineTo(0, 1 * this.unitSize);
-    canvas.lineTo(0, 0);
+    this.drawVert(canvas, -1, -3);
+    canvas.endFill();
+    canvas.beginFill(0xFFFFFF);
+    this.drawVert(canvas, -2, 0);
     canvas.endFill();
     canvas.beginFill(0x777777);
-    canvas.moveTo(1 * this.unitSize, 3 * this.unitSize);
-    canvas.lineTo(3 * this.unitSize, 3 * this.unitSize);
-    canvas.lineTo(3 * this.unitSize, 2 * this.unitSize);
-    canvas.lineTo(4 * this.unitSize, 2 * this.unitSize);
-    canvas.lineTo(4 * this.unitSize, 4 * this.unitSize);
-    canvas.lineTo(2 * this.unitSize, 4 * this.unitSize);
-    canvas.lineTo(2 * this.unitSize, 5 * this.unitSize);
-    canvas.lineTo(1 * this.unitSize, 5 * this.unitSize);
-    canvas.lineTo(1 * this.unitSize, 3 * this.unitSize);
+    this.drawHori(canvas, -3, -2);
+    canvas.endFill();
+    canvas.beginFill(0x777777);
+    this.drawHori(canvas, 0, -1);
     canvas.endFill();
     return null;
+  };
+
+  TessellationOne.prototype.drawVert = function(canvas, xOff, yOff) {
+    canvas.moveTo(xOff * this.unitSize, yOff * this.unitSize);
+    canvas.lineTo((xOff + 2) * this.unitSize, yOff * this.unitSize);
+    canvas.lineTo((xOff + 2) * this.unitSize, (yOff + 2) * this.unitSize);
+    canvas.lineTo((xOff + 3) * this.unitSize, (yOff + 2) * this.unitSize);
+    canvas.lineTo((xOff + 3) * this.unitSize, (yOff + 3) * this.unitSize);
+    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 3) * this.unitSize);
+    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 1) * this.unitSize);
+    canvas.lineTo(xOff * this.unitSize, (yOff + 1) * this.unitSize);
+    canvas.lineTo(xOff * this.unitSize, yOff * this.unitSize);
+    return null;
+  };
+
+  TessellationOne.prototype.drawHori = function(canvas, xOff, yOff) {
+    canvas.moveTo(xOff * this.unitSize, (yOff + 1) * this.unitSize);
+    canvas.lineTo((xOff + 2) * this.unitSize, (yOff + 1) * this.unitSize);
+    canvas.lineTo((xOff + 2) * this.unitSize, yOff * this.unitSize);
+    canvas.lineTo((xOff + 3) * this.unitSize, yOff * this.unitSize);
+    canvas.lineTo((xOff + 3) * this.unitSize, (yOff + 2) * this.unitSize);
+    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 2) * this.unitSize);
+    canvas.lineTo((xOff + 1) * this.unitSize, (yOff + 3) * this.unitSize);
+    canvas.lineTo(xOff * this.unitSize, (yOff + 3) * this.unitSize);
+    canvas.lineTo(xOff * this.unitSize, (yOff + 1) * this.unitSize);
+    return null;
+  };
+
+  TessellationOne.prototype.addLayer = function() {
+    var a, b, c, d, layer, tile, x, y, _i, _len, _ref;
+    layer = [];
+    _ref = this.tileLayers[this.curLayer];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      tile = _ref[_i];
+      x = tile.position.x / this.unitSize;
+      y = tile.position.y / this.unitSize;
+      a = (x + 2) + '_' + (y + 4);
+      b = (x - 4) + '_' + (y + 2);
+      c = (x - 2) + '_' + (y - 4);
+      d = (x + 4) + '_' + (y - 2);
+      if (this.tiles[a] === void 0) {
+        this.tiles[a] = this.addTile(x + 2, y + 4);
+        layer.push(this.tiles[a]);
+      }
+      if (this.tiles[b] === void 0) {
+        this.tiles[b] = this.addTile(x - 4, y + 2);
+        layer.push(this.tiles[b]);
+      }
+      if (this.tiles[c] === void 0) {
+        this.tiles[c] = this.addTile(x - 2, y - 4);
+        layer.push(this.tiles[c]);
+      }
+      if (this.tiles[d] === void 0) {
+        this.tiles[d] = this.addTile(x + 4, y - 2);
+        layer.push(this.tiles[d]);
+      }
+    }
+    this.tileLayers.push(layer);
+    this.curLayer++;
+    return null;
+  };
+
+  TessellationOne.prototype.addTile = function(x, y) {
+    var sp;
+    sp = new PIXI.Sprite(this.tileTex);
+    sp.anchor.x = sp.anchor.y = 0.5;
+    sp.position.x = x * this.unitSize;
+    sp.position.y = y * this.unitSize;
+    sp.alpha = 1 - (this.curLayer / 20);
+    this.spriteHolder.addChild(sp);
+    return sp;
   };
 
   TessellationOne.prototype.unload = function() {
@@ -3888,6 +3949,9 @@ TessellationOne = (function(_super) {
     TessellationOne.__super__.update.call(this);
     if (this.cancelled) {
       return;
+    }
+    if (this.curLayer < 20) {
+      this.addLayer();
     }
     return null;
   };
