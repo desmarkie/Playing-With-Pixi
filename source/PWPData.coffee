@@ -108,5 +108,11 @@ class PWPData
 			classId:"TessellationOne",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:Penrose,
+			classId:"Penrose",
+			description:"....",
+			instructions:"...."
 		}
 	]

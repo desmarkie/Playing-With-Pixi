@@ -4,6 +4,8 @@ class MathUtils
 	@radToDegValue: 180 / Math.PI
 	@twoPI: 2 * Math.PI
 
+	@goldenRatio: (1 + Math.sqrt(5)) / 2
+
 	@degToRad: (val) ->
 		return val * MathUtils.degToRadValue
 
