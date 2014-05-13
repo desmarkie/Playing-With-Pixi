@@ -103,7 +103,8 @@ class QuadTreeTest extends Sketch
 
 			@canvas.clear()
 			if @circles
-				# @canvas.clear()
+				@renderSprite.alpha = 0
+				@renderSprite.setTexture @canvasHolder.generateTexture()
 				@renderSprite.alpha = 1
 				@circleFill @tree
 				# @circles = false

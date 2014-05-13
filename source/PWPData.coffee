@@ -114,5 +114,11 @@ class PWPData
 			classId:"Penrose",
 			description:"....",
 			instructions:"...."
+		},
+		{
+			className:BasicGrid,
+			classId:"BasicGrid",
+			description:"....",
+			instructions:"...."
 		}
 	]
